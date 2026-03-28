@@ -111,7 +111,7 @@
         </div>
         <div class="footer">
             📱 Телефон-приёмник<br>
-            🔄 Получает звуки из Firebase (base64)<br>
+            🔄 Получает звуки из Firebase<br>
             💡 Нажмите на экран для разблокировки звука
         </div>
     </div>
@@ -250,11 +250,6 @@
         updateUI(true);
         startAlarmLoop();
         addLog("🔴 ТРЕВОГА АКТИВИРОВАНА");
-        
-        database.ref('phoneResponses').push({
-            action: 'alarm_received',
-            time: Date.now()
-        });
     }
     
     async function deactivatePhoneAlarm() {
@@ -264,11 +259,6 @@
         updateUI(false);
         await playClearTwice();
         addLog("✅ ОТБОЙ АКТИВИРОВАН");
-        
-        database.ref('phoneResponses').push({
-            action: 'clear_received',
-            time: Date.now()
-        });
     }
     
     function listenForCommands() {
@@ -291,11 +281,20 @@
         // Слушаем звук тревоги
         database.ref('sounds/alarm').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data && data.data) {
-                alarmSoundData = data.data;
+            if (data) {
+                addLog(`📥 Получен звук тревоги: ${data.name}`);
                 document.getElementById('alarmSoundStatus').innerHTML = data.name;
                 document.getElementById('alarmSoundStatus').style.color = '#88ff88';
-                addLog(`📥 Получен звук тревоги: ${data.name} (${(data.size/1024).toFixed(1)} KB)`);
+                
+                // Собираем звук из чанков если нужно
+                if (data.chunks) {
+                    let fullData = data.chunks.join('');
+                    alarmSoundData = fullData;
+                    addLog(`✅ Звук собран из ${data.chunkCount} частей`);
+                } else if (data.data) {
+                    alarmSoundData = data.data;
+                    addLog(`✅ Звук получен целиком`);
+                }
                 
                 // Если тревога активна, обновляем звук
                 if (isAlarmActive) {
@@ -308,11 +307,17 @@
         // Слушаем звук отбоя
         database.ref('sounds/clear').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data && data.data) {
-                clearSoundData = data.data;
+            if (data) {
+                addLog(`📥 Получен звук отбоя: ${data.name}`);
                 document.getElementById('clearSoundStatus').innerHTML = data.name;
                 document.getElementById('clearSoundStatus').style.color = '#88ff88';
-                addLog(`📥 Получен звук отбоя: ${data.name} (${(data.size/1024).toFixed(1)} KB)`);
+                
+                if (data.chunks) {
+                    let fullData = data.chunks.join('');
+                    clearSoundData = fullData;
+                } else if (data.data) {
+                    clearSoundData = data.data;
+                }
             }
         });
     }
@@ -352,13 +357,7 @@
         if (isAlarmActive && currentAlarmAudio && currentAlarmAudio.paused) {
             currentAlarmAudio.play().catch(e => {});
         }
-        // Создаём тихий звук для разблокировки
-        const silentAudio = new Audio("data:audio/wav;base64,U3RlYWx0aCBpcyBhIGdyZWF0IHdheSB0byBlbmpveSB5b3VyIGZh...");
-        silentAudio.play().then(() => {
-            silentAudio.pause();
-            silentAudio.currentTime = 0;
-        }).catch(() => {});
-    }, { once: true });
+    });
 </script>
 </body>
 </html>
