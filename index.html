@@ -2,11 +2,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Система оповещения - Телефон</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -40,6 +39,7 @@
             font-weight: bold;
             text-align: center;
             width: 100%;
+            margin-bottom: 20px;
         }
         .alarm-card {
             background: #031016;
@@ -47,12 +47,20 @@
             padding: 30px;
             margin: 20px 0;
             text-align: center;
+            transition: all 0.2s;
         }
         .alarm-status-icon { font-size: 4rem; margin-bottom: 15px; }
         .alarm-status-text { font-size: 1.8rem; font-weight: bold; }
         .safe-mode { color: #2ecc71; }
         .alarm-mode { color: #e74c3c; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .sound-info {
+            background: #0a181f;
+            border-radius: 25px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
         .debug-box {
             background: #00000099;
             padding: 15px;
@@ -62,7 +70,7 @@
             color: #88ff88;
             max-height: 250px;
             overflow-y: auto;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         .footer { margin-top: 15px; font-size: 0.7rem; text-align: center; color: #b0a88c; }
         .manual-control { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
@@ -87,6 +95,12 @@
             <div id="statusSubText" style="color:#bbccdd;">Ожидание сигнала с компьютера</div>
         </div>
         
+        <div class="sound-info">
+            <div>🎵 Звук тревоги: <span id="alarmSoundStatus" style="color:#ffaa77;">ожидание</span></div>
+            <div>✅ Звук отбоя: <span id="clearSoundStatus" style="color:#ffaa77;">ожидание</span></div>
+            <div id="playbackStatus" style="margin-top: 8px; color: #88ff88;">📻 Готов к приёму</div>
+        </div>
+        
         <div class="debug-box" id="debugBox">
             🔍 ЛОГ СОБЫТИЙ:<br>
             ⏳ Инициализация...
@@ -97,7 +111,8 @@
         </div>
         <div class="footer">
             📱 Телефон-приёмник<br>
-            🔄 Автоматически получает команды с компьютера
+            🔄 Получает звуки из Firebase (base64)<br>
+            💡 Нажмите на экран для разблокировки звука
         </div>
     </div>
 </div>
@@ -107,19 +122,19 @@
         apiKey: "AIzaSyDbbkUV8yZd_i4g-6IJ_VPbQlh7uRp2kFg",
         authDomain: "alarm-system-88f83.firebaseapp.com",
         projectId: "alarm-system-88f83",
+        databaseURL: "https://alarm-system-88f83-default-rtdb.firebaseio.com",
         storageBucket: "alarm-system-88f83.firebasestorage.app",
         messagingSenderId: "604735738788",
-        appId: "1:604735738788:web:dc1a964f8e4692cbfa6731",
-        measurementId: "G-CT25QT7CJD"
+        appId: "1:604735738788:web:dc1a964f8e4692cbfa6731"
     };
     
     let database;
     let isAlarmActive = false;
     let currentAlarmAudio = null;
-    let alarmSoundUrl = null;
-    let clearSoundUrl = null;
+    let alarmSoundData = null;
+    let clearSoundData = null;
     
-    function addLog(msg) {
+    function addLog(msg, isError = false) {
         const debugBox = document.getElementById('debugBox');
         const time = new Date().toLocaleTimeString();
         debugBox.innerHTML += `<br>⏰ ${time} - ${msg}`;
@@ -141,13 +156,13 @@
                     addLog("✅ Подключено к Firebase");
                     document.getElementById('connectionBadge').innerHTML = '✅ ПОДКЛЮЧЕНО К СЕРВЕРУ';
                 } else {
-                    addLog("❌ Нет подключения");
+                    addLog("❌ Нет подключения", true);
                     document.getElementById('connectionBadge').innerHTML = '❌ НЕТ ПОДКЛЮЧЕНИЯ';
                 }
             });
             return true;
         } catch (error) {
-            addLog(`❌ Ошибка: ${error.message}`);
+            addLog(`❌ Ошибка: ${error.message}`, true);
             return false;
         }
     }
@@ -161,34 +176,48 @@
     }
     
     function startAlarmLoop() {
-        if (!alarmSoundUrl) {
-            addLog("⚠️ Нет звука тревоги!");
+        if (!alarmSoundData) {
+            addLog("⚠️ Нет звука тревоги! Загрузите на компьютере", true);
+            document.getElementById('playbackStatus').innerHTML = '⚠️ Нет звука тревоги';
             return;
         }
+        
         stopAlarm();
-        const audio = new Audio(alarmSoundUrl);
+        
+        const audio = new Audio(alarmSoundData);
         audio.loop = true;
-        audio.play().catch(e => addLog(`❌ Ошибка воспроизведения: ${e.message}`));
+        audio.play().catch(e => {
+            addLog(`❌ Ошибка: ${e.message} - нажмите на экран`, true);
+            document.getElementById('playbackStatus').innerHTML = '❌ Нажмите на экран для разблокировки звука';
+        });
         currentAlarmAudio = audio;
         addLog("🚨 Циклическое воспроизведение тревоги запущено");
+        document.getElementById('playbackStatus').innerHTML = '🚨 ТРЕВОГА! Звук играет циклически...';
     }
     
     async function playClearTwice() {
-        if (!clearSoundUrl) {
-            addLog("⚠️ Нет звука отбоя!");
+        if (!clearSoundData) {
+            addLog("⚠️ Нет звука отбоя! Загрузите на компьютере", true);
             return;
         }
+        
         addLog("🔔 Воспроизведение отбоя (2 раза)");
+        document.getElementById('playbackStatus').innerHTML = '🔔 Отбой! Воспроизведение звука (2 раза)...';
+        
         for (let i = 0; i < 2; i++) {
-            const audio = new Audio(clearSoundUrl);
+            const audio = new Audio(clearSoundData);
             await new Promise((resolve) => {
-                audio.play().catch(e => addLog(`❌ Ошибка: ${e.message}`));
+                audio.play().catch(e => addLog(`❌ Ошибка: ${e.message}`, true));
                 audio.onended = () => resolve();
-                setTimeout(() => resolve(), 3000);
+                setTimeout(() => resolve(), 5000);
             });
             if (i === 0) await new Promise(r => setTimeout(r, 400));
         }
+        
         addLog("✅ Отбой завершён");
+        if (!isAlarmActive) {
+            document.getElementById('playbackStatus').innerHTML = '✅ Готов к приёму команд';
+        }
     }
     
     function updateUI(active) {
@@ -222,7 +251,6 @@
         startAlarmLoop();
         addLog("🔴 ТРЕВОГА АКТИВИРОВАНА");
         
-        // Отправляем подтверждение на компьютер
         database.ref('phoneResponses').push({
             action: 'alarm_received',
             time: Date.now()
@@ -248,7 +276,7 @@
         commandsRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data && data.type) {
-                addLog(`📨 Получена команда: ${data.type} от ${data.from || 'компьютера'}`);
+                addLog(`📨 Получена команда: ${data.type}`);
                 if (data.type === 'alarm') {
                     activatePhoneAlarm();
                 } else if (data.type === 'clear') {
@@ -260,11 +288,16 @@
     }
     
     function listenForSounds() {
+        // Слушаем звук тревоги
         database.ref('sounds/alarm').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data && data.url) {
-                alarmSoundUrl = data.url;
-                addLog(`📥 Получен звук тревоги: ${data.name}`);
+            if (data && data.data) {
+                alarmSoundData = data.data;
+                document.getElementById('alarmSoundStatus').innerHTML = data.name;
+                document.getElementById('alarmSoundStatus').style.color = '#88ff88';
+                addLog(`📥 Получен звук тревоги: ${data.name} (${(data.size/1024).toFixed(1)} KB)`);
+                
+                // Если тревога активна, обновляем звук
                 if (isAlarmActive) {
                     stopAlarm();
                     startAlarmLoop();
@@ -272,11 +305,14 @@
             }
         });
         
+        // Слушаем звук отбоя
         database.ref('sounds/clear').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data && data.url) {
-                clearSoundUrl = data.url;
-                addLog(`📥 Получен звук отбоя: ${data.name}`);
+            if (data && data.data) {
+                clearSoundData = data.data;
+                document.getElementById('clearSoundStatus').innerHTML = data.name;
+                document.getElementById('clearSoundStatus').style.color = '#88ff88';
+                addLog(`📥 Получен звук отбоя: ${data.name} (${(data.size/1024).toFixed(1)} KB)`);
             }
         });
     }
@@ -285,7 +321,6 @@
         database.ref('alarmState').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data && data.active !== undefined) {
-                addLog(`📊 Состояние из БД: ${data.active ? "ТРЕВОГА" : "БЕЗОПАСНО"}`);
                 if (data.active && !isAlarmActive) {
                     activatePhoneAlarm();
                 } else if (!data.active && isAlarmActive) {
@@ -299,22 +334,30 @@
         if (currentAlarmAudio) {
             stopAlarm();
             addLog("⏹️ Звук остановлен вручную");
+            document.getElementById('playbackStatus').innerHTML = '⏹️ Звук остановлен вручную';
         }
     });
     
     if (initFirebase()) {
-        setTimeout(() => {
-            addLog("📱 Телефон готов к приёму сигналов");
-            listenForCommands();
-            listenForSounds();
-            listenAlarmState();
-        }, 1000);
+        listenForCommands();
+        listenForSounds();
+        listenAlarmState();
+        addLog("📱 Телефон готов к приёму сигналов");
+        addLog("💡 Нажмите на экран для разблокировки звука");
     }
     
+    // Разблокировка аудио при клике
     document.body.addEventListener('click', () => {
+        addLog("🔊 Аудио разблокировано");
         if (isAlarmActive && currentAlarmAudio && currentAlarmAudio.paused) {
             currentAlarmAudio.play().catch(e => {});
         }
+        // Создаём тихий звук для разблокировки
+        const silentAudio = new Audio("data:audio/wav;base64,U3RlYWx0aCBpcyBhIGdyZWF0IHdheSB0byBlbmpveSB5b3VyIGZh...");
+        silentAudio.play().then(() => {
+            silentAudio.pause();
+            silentAudio.currentTime = 0;
+        }).catch(() => {});
     }, { once: true });
 </script>
 </body>
