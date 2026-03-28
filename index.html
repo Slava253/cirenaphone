@@ -40,6 +40,7 @@
             text-align: center;
             width: 100%;
             margin-bottom: 20px;
+            font-size: 0.9rem;
         }
         .alarm-card {
             background: #031016;
@@ -85,14 +86,19 @@
         .unlock-banner {
             background: #ff884d33;
             border: 1px solid #ff884d;
-            padding: 10px;
+            padding: 12px;
             border-radius: 30px;
             text-align: center;
             margin-top: 15px;
             cursor: pointer;
-            transition: all 0.2s;
+            font-weight: bold;
         }
-        .unlock-banner:hover { background: #ff884d66; }
+        .distance-badge {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 10px;
+            color: #ffaa77;
+        }
     </style>
 </head>
 <body id="phoneBody">
@@ -103,7 +109,7 @@
         <div class="alarm-card" id="alarmCard">
             <div class="alarm-status-icon" id="statusIcon">🟢</div>
             <div class="alarm-status-text safe-mode" id="statusMainText">БЕЗОПАСНО</div>
-            <div id="statusSubText" style="color:#bbccdd;">Ожидание сигнала с компьютера</div>
+            <div id="statusSubText" style="color:#bbccdd;">Ожидание сигнала</div>
         </div>
         
         <div class="sound-info">
@@ -113,7 +119,11 @@
         </div>
         
         <div class="unlock-banner" id="unlockBanner">
-            🔇 НАЖМИТЕ СЮДА ДЛЯ РАЗБЛОКИРОВКИ ЗВУКА 🔇
+            🔇 НАЖМИТЕ ДЛЯ РАЗБЛОКИРОВКИ ЗВУКА 🔇
+        </div>
+        
+        <div class="distance-badge">
+            🌍 РАБОТАЕТ НА ЛЮБОМ РАССТОЯНИИ
         </div>
         
         <div class="debug-box" id="debugBox">
@@ -126,8 +136,9 @@
         </div>
         <div class="footer">
             📱 Телефон-приёмник<br>
-            🔄 Получает звуки из Firebase<br>
-            ⚠️ СНАЧАЛА НАЖМИТЕ НА ЖЁЛТУЮ ПОЛОСУ ДЛЯ РАЗБЛОКИРОВКИ ЗВУКА!
+            🔄 Получает сигналы из облака Firebase<br>
+            🌍 Работает на любом расстоянии (хоть 1500 км, хоть 15000 км)<br>
+            💡 Нужен только интернет
         </div>
     </div>
 </div>
@@ -166,14 +177,16 @@
             }
             database = firebase.database();
             
-            const connectedRef = firebase.database().ref(".info/connected");
+            const connectedRef = database.ref(".info/connected");
             connectedRef.on("value", (snap) => {
                 if (snap.val() === true) {
-                    addLog("✅ Подключено к Firebase");
-                    document.getElementById('connectionBadge').innerHTML = '✅ ПОДКЛЮЧЕНО К СЕРВЕРУ';
+                    addLog("✅ Подключено к Firebase Cloud");
+                    document.getElementById('connectionBadge').innerHTML = '✅ ПОДКЛЮЧЕНО К ОБЛАКУ';
+                    document.getElementById('connectionBadge').style.background = '#2c5a3e';
                 } else {
-                    addLog("❌ Нет подключения", true);
-                    document.getElementById('connectionBadge').innerHTML = '❌ НЕТ ПОДКЛЮЧЕНИЯ';
+                    addLog("❌ Нет интернета", true);
+                    document.getElementById('connectionBadge').innerHTML = '❌ НЕТ ИНТЕРНЕТА';
+                    document.getElementById('connectionBadge').style.background = '#8b0000';
                 }
             });
             return true;
@@ -183,29 +196,25 @@
         }
     }
     
-    // РАЗБЛОКИРОВКА АУДИО
     function unlockAudio() {
         if (audioUnlocked) return;
         
-        addLog("🔊 Попытка разблокировки аудио на телефоне...");
-        
+        addLog("🔊 Разблокировка аудио на телефоне...");
         const silentAudio = new Audio();
         silentAudio.volume = 0;
         
         const playPromise = silentAudio.play();
-        
         if (playPromise !== undefined) {
             playPromise.then(() => {
                 audioUnlocked = true;
-                addLog("✅ АУДИО РАЗБЛОКИРОВАНО! Теперь звуки будут работать");
-                document.getElementById('unlockBanner').innerHTML = '🔊 ЗВУК РАЗБЛОКИРОВАН! МОЖНО ИСПОЛЬЗОВАТЬ 🔊';
+                addLog("✅ АУДИО РАЗБЛОКИРОВАНО!");
+                document.getElementById('unlockBanner').innerHTML = '🔊 ЗВУК РАЗБЛОКИРОВАН! 🔊';
                 document.getElementById('unlockBanner').style.background = '#2ecc7133';
                 document.getElementById('unlockBanner').style.borderColor = '#2ecc71';
                 silentAudio.pause();
                 silentAudio.currentTime = 0;
             }).catch((error) => {
-                addLog(`❌ Ошибка разблокировки: ${error.message}`, true);
-                document.getElementById('unlockBanner').innerHTML = '⚠️ НАЖМИТЕ ЕЩЁ РАЗ ДЛЯ РАЗБЛОКИРОВКИ ⚠️';
+                addLog(`❌ Ошибка: ${error.message}`, true);
             });
         }
     }
@@ -226,8 +235,8 @@
         }
         
         if (!audioUnlocked) {
-            addLog("⚠️ СНАЧАЛА РАЗБЛОКИРУЙТЕ ЗВУК! Нажмите на жёлтую полосу", true);
-            document.getElementById('playbackStatus').innerHTML = '⚠️ Нажмите на жёлтую полосу для разблокировки';
+            addLog("⚠️ Сначала разблокируйте звук!", true);
+            document.getElementById('playbackStatus').innerHTML = '⚠️ Нажмите на жёлтую полосу';
             return;
         }
         
@@ -236,34 +245,33 @@
         const audio = new Audio(alarmSoundData);
         audio.loop = true;
         audio.play().then(() => {
-            addLog("🚨 Циклическое воспроизведение тревоги запущено");
-            document.getElementById('playbackStatus').innerHTML = '🚨 ТРЕВОГА! Звук играет циклически...';
+            addLog("🚨 ТРЕВОГА! Циклическое воспроизведение");
+            document.getElementById('playbackStatus').innerHTML = '🚨 ТРЕВОГА! Звук играет...';
         }).catch(e => {
             addLog(`❌ Ошибка: ${e.message}`, true);
-            document.getElementById('playbackStatus').innerHTML = '❌ Ошибка воспроизведения';
         });
         currentAlarmAudio = audio;
     }
     
     async function playClearTwice() {
         if (!clearSoundData) {
-            addLog("⚠️ Нет звука отбоя! Загрузите на компьютере", true);
+            addLog("⚠️ Нет звука отбоя!", true);
             return;
         }
         
         if (!audioUnlocked) {
-            addLog("⚠️ СНАЧАЛА РАЗБЛОКИРУЙТЕ ЗВУК!", true);
+            addLog("⚠️ Сначала разблокируйте звук!", true);
             return;
         }
         
-        addLog("🔔 Воспроизведение отбоя (2 раза)");
-        document.getElementById('playbackStatus').innerHTML = '🔔 Отбой! Воспроизведение звука (2 раза)...';
+        addLog("🔔 Отбой! Воспроизведение 2 раза");
+        document.getElementById('playbackStatus').innerHTML = '🔔 Отбой! 2 раза...';
         
         for (let i = 0; i < 2; i++) {
             const audio = new Audio(clearSoundData);
             await new Promise((resolve) => {
                 audio.play().then(() => {
-                    addLog(`✅ Отбой, часть ${i+1}/2`);
+                    addLog(`✅ Отбой часть ${i+1}/2`);
                 }).catch(e => addLog(`❌ Ошибка: ${e.message}`, true));
                 audio.onended = () => resolve();
                 setTimeout(() => resolve(), 5000);
@@ -273,7 +281,7 @@
         
         addLog("✅ Отбой завершён");
         if (!isAlarmActive) {
-            document.getElementById('playbackStatus').innerHTML = '✅ Готов к приёму команд';
+            document.getElementById('playbackStatus').innerHTML = '✅ Готов к приёму';
         }
     }
     
@@ -296,7 +304,7 @@
             icon.innerHTML = '🟢';
             mainText.innerHTML = 'БЕЗОПАСНО';
             mainText.className = 'alarm-status-text safe-mode';
-            subText.innerHTML = 'Ожидание сигнала с компьютера';
+            subText.innerHTML = 'Ожидание сигнала';
             alarmCard.style.background = '#031016';
         }
     }
@@ -306,7 +314,7 @@
         isAlarmActive = true;
         updateUI(true);
         startAlarmLoop();
-        addLog("🔴 ТРЕВОГА АКТИВИРОВАНА");
+        addLog("🔴 ТРЕВОГА ПОЛУЧЕНА ИЗ ОБЛАКА!");
     }
     
     async function deactivatePhoneAlarm() {
@@ -315,7 +323,7 @@
         stopAlarm();
         updateUI(false);
         await playClearTwice();
-        addLog("✅ ОТБОЙ АКТИВИРОВАН");
+        addLog("✅ ОТБОЙ ПОЛУЧЕН ИЗ ОБЛАКА!");
     }
     
     function listenForCommands() {
@@ -323,7 +331,7 @@
         commandsRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data && data.type) {
-                addLog(`📨 Получена команда: ${data.type}`);
+                addLog(`📨 ПОЛУЧЕНА КОМАНДА: ${data.type.toUpperCase()} из облака!`);
                 if (data.type === 'alarm') {
                     activatePhoneAlarm();
                 } else if (data.type === 'clear') {
@@ -331,7 +339,7 @@
                 }
             }
         });
-        addLog("👂 Слушаю команды...");
+        addLog("👂 Слушаю облако...");
     }
     
     function listenForSounds() {
@@ -341,7 +349,7 @@
                 alarmSoundData = data.data;
                 document.getElementById('alarmSoundStatus').innerHTML = data.name;
                 document.getElementById('alarmSoundStatus').style.color = '#88ff88';
-                addLog(`📥 Получен звук тревоги: ${data.name}`);
+                addLog(`📥 ПОЛУЧЕН ЗВУК ТРЕВОГИ: ${data.name} из облака!`);
                 
                 if (isAlarmActive) {
                     stopAlarm();
@@ -356,7 +364,7 @@
                 clearSoundData = data.data;
                 document.getElementById('clearSoundStatus').innerHTML = data.name;
                 document.getElementById('clearSoundStatus').style.color = '#88ff88';
-                addLog(`📥 Получен звук отбоя: ${data.name}`);
+                addLog(`📥 ПОЛУЧЕН ЗВУК ОТБОЯ: ${data.name} из облака!`);
             }
         });
     }
@@ -378,7 +386,6 @@
         if (currentAlarmAudio) {
             stopAlarm();
             addLog("⏹️ Звук остановлен вручную");
-            document.getElementById('playbackStatus').innerHTML = '⏹️ Звук остановлен вручную';
         }
     });
     
@@ -387,17 +394,16 @@
     });
     
     document.body.addEventListener('click', () => {
-        if (!audioUnlocked) {
-            unlockAudio();
-        }
+        if (!audioUnlocked) unlockAudio();
     });
     
     if (initFirebase()) {
         listenForCommands();
         listenForSounds();
         listenAlarmState();
-        addLog("📱 Телефон готов к приёму сигналов");
-        addLog("⚠️ ВАЖНО: Сначала нажмите на ЖЁЛТУЮ ПОЛОСУ для разблокировки звука!");
+        addLog("📱 ТЕЛЕФОН ГОТОВ К ПРИЁМУ");
+        addLog("🌍 Можно находиться где угодно - сигнал дойдёт!");
+        addLog("💡 Нажмите на жёлтую полосу для звука");
     }
 </script>
 </body>
