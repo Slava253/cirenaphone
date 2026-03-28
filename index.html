@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Система оповещения - Телефон</title>
+    <title>Система оповещения - Телефон (Работает даже при плохом интернете)</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -22,59 +22,73 @@
             0% { background: linear-gradient(135deg, #0a0f1a 0%, #0a1a1f 100%); }
             100% { background: linear-gradient(135deg, #4a0000 0%, #2a0000 100%); }
         }
-        .container { max-width: 500px; width: 100%; }
+        .container { max-width: 550px; width: 100%; }
         .phone-panel {
             background: rgba(10, 20, 28, 0.9);
             backdrop-filter: blur(16px);
             border-radius: 50px;
-            padding: 30px;
+            padding: 25px;
             border: 2px solid rgba(255, 100, 80, 0.4);
         }
         .connection-badge {
             display: inline-block;
-            background: #2c5a3e;
             padding: 8px 20px;
             border-radius: 30px;
-            color: #aaffaa;
             font-weight: bold;
             text-align: center;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 0.9rem;
         }
+        .connection-badge.online { background: #2c5a3e; color: #aaffaa; }
+        .connection-badge.offline { background: #8b0000; color: #ffaaaa; }
+        .connection-badge.checking { background: #ff884d; color: #1e3a44; }
+        
         .alarm-card {
             background: #031016;
             border-radius: 40px;
-            padding: 30px;
-            margin: 20px 0;
+            padding: 25px;
+            margin: 15px 0;
             text-align: center;
             transition: all 0.2s;
         }
-        .alarm-status-icon { font-size: 4rem; margin-bottom: 15px; }
-        .alarm-status-text { font-size: 1.8rem; font-weight: bold; }
+        .alarm-status-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .alarm-status-text { font-size: 1.5rem; font-weight: bold; }
         .safe-mode { color: #2ecc71; }
         .alarm-mode { color: #e74c3c; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .signal-quality {
+            background: #0a181f;
+            border-radius: 20px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+        
         .sound-info {
             background: #0a181f;
             border-radius: 25px;
-            padding: 15px;
-            margin-top: 15px;
-            font-size: 0.85rem;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.8rem;
         }
+        
         .debug-box {
             background: #00000099;
-            padding: 15px;
+            padding: 12px;
             border-radius: 20px;
             font-size: 0.7rem;
             font-family: monospace;
             color: #88ff88;
-            max-height: 250px;
+            max-height: 200px;
             overflow-y: auto;
-            margin-top: 15px;
+            margin-top: 12px;
         }
-        .footer { margin-top: 15px; font-size: 0.7rem; text-align: center; color: #b0a88c; }
-        .manual-control { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+        
+        .footer { margin-top: 12px; font-size: 0.65rem; text-align: center; color: #b0a88c; }
+        .manual-control { margin-top: 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .small-btn {
             background: #2c4f5e;
             border: none;
@@ -82,6 +96,7 @@
             padding: 8px 16px;
             border-radius: 30px;
             cursor: pointer;
+            font-size: 0.8rem;
         }
         .unlock-banner {
             background: #ff884d33;
@@ -89,22 +104,40 @@
             padding: 12px;
             border-radius: 30px;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 12px;
             cursor: pointer;
             font-weight: bold;
         }
-        .distance-badge {
-            text-align: center;
-            font-size: 0.7rem;
-            margin-top: 10px;
-            color: #ffaa77;
+        .retry-btn {
+            background: #ff884d;
+            border: none;
+            color: #1e3a44;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 8px;
         }
+        .instruction-box {
+            background: #1e3a44aa;
+            padding: 12px;
+            border-radius: 20px;
+            margin-top: 12px;
+            font-size: 0.7rem;
+            text-align: left;
+        }
+        .instruction-box h4 { color: #ffbb77; margin-bottom: 8px; }
+        .instruction-box li { margin-left: 20px; margin-top: 4px; color: #ccddff; }
     </style>
 </head>
 <body id="phoneBody">
 <div class="container">
     <div class="phone-panel">
-        <div class="connection-badge" id="connectionBadge">🔌 ПОДКЛЮЧЕНИЕ...</div>
+        <div class="connection-badge checking" id="connectionBadge">🔄 ПРОВЕРКА ПОДКЛЮЧЕНИЯ...</div>
+        
+        <div class="signal-quality" id="signalQuality">
+            📡 Статус сети: <span id="networkStatus">проверка...</span>
+        </div>
         
         <div class="alarm-card" id="alarmCard">
             <div class="alarm-status-icon" id="statusIcon">🟢</div>
@@ -115,30 +148,38 @@
         <div class="sound-info">
             <div>🎵 Звук тревоги: <span id="alarmSoundStatus" style="color:#ffaa77;">ожидание</span></div>
             <div>✅ Звук отбоя: <span id="clearSoundStatus" style="color:#ffaa77;">ожидание</span></div>
-            <div id="playbackStatus" style="margin-top: 8px; color: #88ff88;">📻 Готов к приёму</div>
+            <div id="playbackStatus" style="margin-top: 6px; color: #88ff88;">📻 Готов к приёму</div>
         </div>
         
         <div class="unlock-banner" id="unlockBanner">
             🔇 НАЖМИТЕ ДЛЯ РАЗБЛОКИРОВКИ ЗВУКА 🔇
         </div>
         
-        <div class="distance-badge">
-            🌍 РАБОТАЕТ НА ЛЮБОМ РАССТОЯНИИ
+        <div class="manual-control">
+            <button class="small-btn" id="stopTestBtn">⏹️ Остановить звук</button>
+            <button class="small-btn" id="retryConnectBtn">🔄 ПЕРЕПОДКЛЮЧИТЬСЯ</button>
+        </div>
+        
+        <div class="instruction-box">
+            <h4>📱 ИНСТРУКЦИЯ ДЛЯ БАБУШКИ:</h4>
+            <ul>
+                <li>1️⃣ Включите мобильный интернет или Wi-Fi</li>
+                <li>2️⃣ Если нет интернета - позвоните мне, я скажу что делать</li>
+                <li>3️⃣ Нажмите на ЖЁЛТУЮ полосу для включения звука</li>
+                <li>4️⃣ Если "нет интернета" - проверьте настройки телефона</li>
+                <li>5️⃣ Можно перезагрузить телефон - это часто помогает!</li>
+            </ul>
         </div>
         
         <div class="debug-box" id="debugBox">
             🔍 ЛОГ СОБЫТИЙ:<br>
-            ⏳ Инициализация...
+            ⏳ Запуск...
         </div>
         
-        <div class="manual-control">
-            <button class="small-btn" id="stopTestBtn">⏹️ Остановить звук</button>
-        </div>
         <div class="footer">
-            📱 Телефон-приёмник<br>
-            🔄 Получает сигналы из облака Firebase<br>
-            🌍 Работает на любом расстоянии (хоть 1500 км, хоть 15000 км)<br>
-            💡 Нужен только интернет
+            📡 Для работы нужен интернет (Wi-Fi или мобильный)<br>
+            🔄 Если интернет пропал - система будет ждать восстановления<br>
+            💡 При проблемах: перезагрузите телефон и проверьте настройки сети
         </div>
     </div>
 </div>
@@ -160,16 +201,69 @@
     let alarmSoundData = null;
     let clearSoundData = null;
     let audioUnlocked = false;
+    let reconnectAttempts = 0;
+    let reconnectInterval = null;
     
     function addLog(msg, isError = false) {
         const debugBox = document.getElementById('debugBox');
         const time = new Date().toLocaleTimeString();
-        debugBox.innerHTML += `<br>⏰ ${time} - ${msg}`;
+        const prefix = isError ? '❌' : '✅';
+        debugBox.innerHTML += `<br>⏰ ${time} - ${prefix} ${msg}`;
         debugBox.scrollTop = debugBox.scrollHeight;
         console.log(msg);
+        
+        // Ограничиваем количество строк в логе
+        const lines = debugBox.innerHTML.split('<br>');
+        if (lines.length > 50) {
+            debugBox.innerHTML = lines.slice(-45).join('<br>');
+        }
+    }
+    
+    function checkNetworkStatus() {
+        const networkStatusSpan = document.getElementById('networkStatus');
+        
+        if (navigator.onLine) {
+            networkStatusSpan.innerHTML = '✅ Интернет ЕСТЬ';
+            networkStatusSpan.style.color = '#88ff88';
+            return true;
+        } else {
+            networkStatusSpan.innerHTML = '❌ ИНТЕРНЕТА НЕТ! Проверьте Wi-Fi или мобильные данные';
+            networkStatusSpan.style.color = '#ff8888';
+            return false;
+        }
+    }
+    
+    function updateConnectionBadge(isConnected, isChecking = false) {
+        const badge = document.getElementById('connectionBadge');
+        if (isChecking) {
+            badge.innerHTML = '🔄 ПРОВЕРКА ПОДКЛЮЧЕНИЯ...';
+            badge.className = 'connection-badge checking';
+        } else if (isConnected) {
+            badge.innerHTML = '✅ ПОДКЛЮЧЕНО К ОБЛАКУ! Сигнал идёт';
+            badge.className = 'connection-badge online';
+        } else {
+            badge.innerHTML = '❌ НЕТ ИНТЕРНЕТА! Проверьте настройки телефона';
+            badge.className = 'connection-badge offline';
+        }
+    }
+    
+    function startReconnectTimer() {
+        if (reconnectInterval) clearInterval(reconnectInterval);
+        
+        reconnectInterval = setInterval(() => {
+            if (!navigator.onLine) {
+                addLog("🔄 Нет интернета, пытаемся восстановить...", true);
+                checkNetworkStatus();
+            } else if (!database) {
+                addLog("🔄 Пытаемся переподключиться к Firebase...");
+                initFirebase();
+            }
+        }, 30000); // каждые 30 секунд
     }
     
     function initFirebase() {
+        updateConnectionBadge(false, true);
+        
         try {
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
@@ -179,27 +273,95 @@
             
             const connectedRef = database.ref(".info/connected");
             connectedRef.on("value", (snap) => {
-                if (snap.val() === true) {
-                    addLog("✅ Подключено к Firebase Cloud");
-                    document.getElementById('connectionBadge').innerHTML = '✅ ПОДКЛЮЧЕНО К ОБЛАКУ';
-                    document.getElementById('connectionBadge').style.background = '#2c5a3e';
+                const isConnected = snap.val() === true;
+                
+                if (isConnected) {
+                    addLog("✅ ПОДКЛЮЧЕНО К FIREBASE CLOUD!");
+                    updateConnectionBadge(true, false);
+                    reconnectAttempts = 0;
+                    
+                    // После подключения запускаем слушатели
+                    setupListeners();
                 } else {
-                    addLog("❌ Нет интернета", true);
-                    document.getElementById('connectionBadge').innerHTML = '❌ НЕТ ИНТЕРНЕТА';
-                    document.getElementById('connectionBadge').style.background = '#8b0000';
+                    addLog("❌ НЕТ ПОДКЛЮЧЕНИЯ К FIREBASE!", true);
+                    updateConnectionBadge(false, false);
                 }
             });
+            
             return true;
         } catch (error) {
-            addLog(`❌ Ошибка: ${error.message}`, true);
+            addLog(`❌ Ошибка Firebase: ${error.message}`, true);
+            updateConnectionBadge(false, false);
             return false;
         }
+    }
+    
+    let listenersSetup = false;
+    
+    function setupListeners() {
+        if (listenersSetup) return;
+        listenersSetup = true;
+        
+        addLog("👂 Настройка прослушивания команд...");
+        
+        // Слушаем команды
+        const commandsRef = database.ref('commands');
+        commandsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.type) {
+                addLog(`📨 ПОЛУЧЕНА КОМАНДА: ${data.type.toUpperCase()}!`);
+                if (data.type === 'alarm') {
+                    activatePhoneAlarm();
+                } else if (data.type === 'clear') {
+                    deactivatePhoneAlarm();
+                }
+            }
+        });
+        
+        // Слушаем звуки
+        database.ref('sounds/alarm').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.data) {
+                alarmSoundData = data.data;
+                document.getElementById('alarmSoundStatus').innerHTML = data.name;
+                document.getElementById('alarmSoundStatus').style.color = '#88ff88';
+                addLog(`📥 ПОЛУЧЕН ЗВУК ТРЕВОГИ: ${data.name}`);
+                
+                if (isAlarmActive) {
+                    stopAlarm();
+                    startAlarmLoop();
+                }
+            }
+        });
+        
+        database.ref('sounds/clear').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.data) {
+                clearSoundData = data.data;
+                document.getElementById('clearSoundStatus').innerHTML = data.name;
+                document.getElementById('clearSoundStatus').style.color = '#88ff88';
+                addLog(`📥 ПОЛУЧЕН ЗВУК ОТБОЯ: ${data.name}`);
+            }
+        });
+        
+        database.ref('alarmState').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.active !== undefined) {
+                if (data.active && !isAlarmActive) {
+                    activatePhoneAlarm();
+                } else if (!data.active && isAlarmActive) {
+                    deactivatePhoneAlarm();
+                }
+            }
+        });
+        
+        addLog("✅ Все слушатели настроены! Ждём сигналы...");
     }
     
     function unlockAudio() {
         if (audioUnlocked) return;
         
-        addLog("🔊 Разблокировка аудио на телефоне...");
+        addLog("🔊 Разблокировка аудио...");
         const silentAudio = new Audio();
         silentAudio.volume = 0;
         
@@ -214,7 +376,7 @@
                 silentAudio.pause();
                 silentAudio.currentTime = 0;
             }).catch((error) => {
-                addLog(`❌ Ошибка: ${error.message}`, true);
+                addLog(`❌ Ошибка разблокировки: ${error.message}`, true);
             });
         }
     }
@@ -229,7 +391,7 @@
     
     function startAlarmLoop() {
         if (!alarmSoundData) {
-            addLog("⚠️ Нет звука тревоги! Загрузите на компьютере", true);
+            addLog("⚠️ Нет звука тревоги!", true);
             document.getElementById('playbackStatus').innerHTML = '⚠️ Нет звука тревоги';
             return;
         }
@@ -245,7 +407,7 @@
         const audio = new Audio(alarmSoundData);
         audio.loop = true;
         audio.play().then(() => {
-            addLog("🚨 ТРЕВОГА! Циклическое воспроизведение");
+            addLog("🚨 ТРЕВОГА! Звук играет циклически");
             document.getElementById('playbackStatus').innerHTML = '🚨 ТРЕВОГА! Звук играет...';
         }).catch(e => {
             addLog(`❌ Ошибка: ${e.message}`, true);
@@ -314,7 +476,7 @@
         isAlarmActive = true;
         updateUI(true);
         startAlarmLoop();
-        addLog("🔴 ТРЕВОГА ПОЛУЧЕНА ИЗ ОБЛАКА!");
+        addLog("🔴 ТРЕВОГА ПОЛУЧЕНА!");
     }
     
     async function deactivatePhoneAlarm() {
@@ -323,70 +485,48 @@
         stopAlarm();
         updateUI(false);
         await playClearTwice();
-        addLog("✅ ОТБОЙ ПОЛУЧЕН ИЗ ОБЛАКА!");
+        addLog("✅ ОТБОЙ ПОЛУЧЕН!");
     }
     
-    function listenForCommands() {
-        const commandsRef = database.ref('commands');
-        commandsRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.type) {
-                addLog(`📨 ПОЛУЧЕНА КОМАНДА: ${data.type.toUpperCase()} из облака!`);
-                if (data.type === 'alarm') {
-                    activatePhoneAlarm();
-                } else if (data.type === 'clear') {
-                    deactivatePhoneAlarm();
-                }
-            }
-        });
-        addLog("👂 Слушаю облако...");
-    }
-    
-    function listenForSounds() {
-        database.ref('sounds/alarm').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.data) {
-                alarmSoundData = data.data;
-                document.getElementById('alarmSoundStatus').innerHTML = data.name;
-                document.getElementById('alarmSoundStatus').style.color = '#88ff88';
-                addLog(`📥 ПОЛУЧЕН ЗВУК ТРЕВОГИ: ${data.name} из облака!`);
-                
-                if (isAlarmActive) {
-                    stopAlarm();
-                    startAlarmLoop();
-                }
-            }
-        });
+    function manualReconnect() {
+        addLog("🔄 Ручное переподключение...");
+        listenersSetup = false;
+        database = null;
         
-        database.ref('sounds/clear').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.data) {
-                clearSoundData = data.data;
-                document.getElementById('clearSoundStatus').innerHTML = data.name;
-                document.getElementById('clearSoundStatus').style.color = '#88ff88';
-                addLog(`📥 ПОЛУЧЕН ЗВУК ОТБОЯ: ${data.name} из облака!`);
+        try {
+            if (firebase.apps.length) {
+                // Не удаляем приложение, просто пересоздаём подключение
+                addLog("🔄 Переинициализация подключения...");
             }
-        });
+            initFirebase();
+        } catch (e) {
+            addLog(`❌ Ошибка: ${e.message}`, true);
+        }
     }
     
-    function listenAlarmState() {
-        database.ref('alarmState').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.active !== undefined) {
-                if (data.active && !isAlarmActive) {
-                    activatePhoneAlarm();
-                } else if (!data.active && isAlarmActive) {
-                    deactivatePhoneAlarm();
-                }
-            }
-        });
-    }
+    // Следим за статусом интернета
+    window.addEventListener('online', () => {
+        addLog("🌐 Интернет появился! Переподключаемся...");
+        checkNetworkStatus();
+        manualReconnect();
+    });
     
+    window.addEventListener('offline', () => {
+        addLog("⚠️ Интернет пропал! Ждём восстановления...", true);
+        checkNetworkStatus();
+        updateConnectionBadge(false, false);
+    });
+    
+    // Кнопки
     document.getElementById('stopTestBtn').addEventListener('click', () => {
         if (currentAlarmAudio) {
             stopAlarm();
             addLog("⏹️ Звук остановлен вручную");
         }
+    });
+    
+    document.getElementById('retryConnectBtn').addEventListener('click', () => {
+        manualReconnect();
     });
     
     document.getElementById('unlockBanner').addEventListener('click', () => {
@@ -397,14 +537,14 @@
         if (!audioUnlocked) unlockAudio();
     });
     
-    if (initFirebase()) {
-        listenForCommands();
-        listenForSounds();
-        listenAlarmState();
-        addLog("📱 ТЕЛЕФОН ГОТОВ К ПРИЁМУ");
-        addLog("🌍 Можно находиться где угодно - сигнал дойдёт!");
-        addLog("💡 Нажмите на жёлтую полосу для звука");
-    }
+    // Запуск
+    checkNetworkStatus();
+    initFirebase();
+    startReconnectTimer();
+    
+    addLog("📱 ТЕЛЕФОН ГОТОВ К ПРИЁМУ");
+    addLog("💡 Если нет интернета - проверьте настройки телефона");
+    addLog("💡 Можно перезагрузить телефон - это часто помогает!");
 </script>
 </body>
 </html>
