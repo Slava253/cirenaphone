@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Касса / Терминал</title>
 <style>
+  /* ============ ОБЩИЕ СТИЛИ ============ */
   :root {
     --primary: #6366f1; --primary-light: #818cf8;
     --bg: #f1f5f9; --card: #fff;
@@ -18,8 +19,13 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
     background: linear-gradient(135deg, #eef2ff 0%, #f1f5f9 50%, #ecfeff 100%);
     color: var(--text); min-height: 100vh;
+    font-size: 15px; line-height: 1.5;
+  }
+
+  /* ============ ТЕРМИНАЛ (ТЕЛЕФОН) ============ */
+  .terminal-wrap {
     display: flex; align-items: center; justify-content: center;
-    padding: 16px; font-size: 15px; line-height: 1.5;
+    min-height: 100vh; padding: 16px;
   }
   .app-container {
     width: 100%; max-width: 480px;
@@ -123,153 +129,526 @@
     font-size: 10px; z-index: 9999;
     font-family: monospace;
   }
+
+  /* ============ КАССА (ПК) — стили из старой кассы ============ */
+  .cashier-body {
+    background: linear-gradient(145deg, #1e2a3a 0%, #0f1a24 100%) !important;
+    padding: 12px;
+    color: #fff;
+  }
+  .cashier-container { max-width: 1400px; margin: 0 auto; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn {
+    background: #2c3e2f; border: 2px solid #d4af37; color: #ffefb9;
+    padding: 10px 20px; border-radius: 40px; font-size: 0.9rem;
+    font-weight: bold; cursor: pointer;
+  }
+  .tab-btn.active { background: #d6a13e; color: #1f2a0e; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .panel-cashier {
+    background: #2c3e2f; border-radius: 28px; padding: 16px;
+    border: 1px solid #d4af37; margin-bottom: 16px;
+  }
+  .panel-title { color: #ffd966; font-size: 1.3rem; margin-bottom: 16px; border-bottom: 2px solid #d4af37; padding-bottom: 8px; }
+  .form-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .form-group { flex: 1; min-width: 140px; }
+  .form-group label { display: block; font-size: 0.7rem; color: #b9d2a5; margin-bottom: 4px; font-weight: bold; }
+  .cashier-body input, .cashier-body select {
+    width: 100%; padding: 10px 14px; background: #fef9e6;
+    border: 2px solid #c9b25a; border-radius: 40px; font-size: 0.95rem; outline: none;
+  }
+  .cashier-body input:focus { border-color: #ffcf4a; }
+  .cashier-body button {
+    background: #d6a13e; color: #1f2a0e; padding: 10px 20px;
+    border: none; border-radius: 40px; font-size: 0.9rem;
+    font-weight: bold; cursor: pointer; transition: transform 0.1s;
+  }
+  .cashier-body button:active { transform: scale(0.97); }
+  .btn-secondary { background: #4a7c59; color: white; }
+  .btn-danger { background: #b13e3e; color: white; }
+  .btn-warning { background: #5d5a2c; color: white; }
+  .btn-success { background: #2f6b2f; color: white; }
+  .btn-info { background: #2c6b6b; color: white; }
+  .btn-close { background: #b13e3e; color: white; padding: 6px 12px; font-size: 0.8rem; }
+  .table-wrapper { overflow-x: auto; border-radius: 16px; background: #0f1f0e; padding: 3px; }
+  table { width: 100%; border-collapse: collapse; background: #fef9e6; border-radius: 14px; overflow: hidden; font-size: 0.85rem; }
+  th { background: #3b2a1f; color: #ffeaac; padding: 8px 6px; text-align: left; }
+  td { padding: 8px 6px; border-bottom: 1px solid #ddd2b0; color: #1a1a1a; }
+  .client-card {
+    background: linear-gradient(135deg, #1e3a2e 0%, #0f2a1e 100%);
+    border-radius: 20px; padding: 16px; margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px; border: 1px solid #d4af37;
+  }
+  .client-info { display: flex; gap: 12px; flex-wrap: wrap; }
+  .client-badge, .points-badge { padding: 6px 14px; border-radius: 40px; font-weight: bold; font-size: 0.85rem; }
+  .client-badge { background: #2c6b2c; color: #ffd966; }
+  .points-badge { background: #d6a13e; color: #1f2a0e; }
+  .cart-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .cart-header h2 { color: #f7e05e; font-size: 1.3rem; }
+  .total-amount { font-size: 1.5rem; font-weight: bold; background: #00000066; padding: 6px 16px; border-radius: 40px; color: #f5f5b5; }
+  .scanner-bar { display: flex; flex-wrap: wrap; gap: 12px; }
+  .scanner-bar .form-group { flex: 2; }
+  .message {
+    background: #191e12; border-radius: 20px; padding: 10px 16px;
+    color: #eedb77; margin-top: 12px; border-left: 4px solid gold; font-size: 0.8rem;
+  }
+  .modal {
+    display: none; position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+    z-index: 1000; justify-content: center; align-items: center;
+  }
+  .modal-content {
+    background: #2c3e2f; padding: 24px; border-radius: 32px;
+    border: 2px solid #d4af37; max-width: 400px; width: 90%;
+    text-align: center;
+  }
+  .modal-content h3 { color: #ffd966; text-align: center; margin-bottom: 16px; }
+  .modal-content p { color: white; margin-bottom: 20px; font-size: 1.1rem; }
+  .payment-methods { display: flex; gap: 12px; margin-bottom: 16px; }
+  .payment-method {
+    flex: 1; padding: 12px; background: #fef9e6; border: 2px solid #c9b25a;
+    border-radius: 40px; text-align: center; cursor: pointer; font-weight: bold;
+    color: #1a1a1a;
+  }
+  .payment-method.selected { background: #d6a13e; border-color: #d6a13e; }
+  .change-area { background: #1e2a1c; padding: 12px; border-radius: 24px; margin: 12px 0; text-align: center; }
+  .change-amount { font-size: 1.8rem; font-weight: bold; color: #ffd966; }
+  .card-row { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+  .card-item {
+    flex: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px; padding: 16px; text-align: center;
+    cursor: pointer; transition: transform 0.2s; min-width: 200px;
+  }
+  .card-item:active { transform: scale(0.98); }
+  .card-item.discount { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+  .card-item.cancel { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+  .card-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; }
+  .card-barcode { font-family: monospace; font-size: 1.2rem; background: white; color: black; padding: 8px; border-radius: 12px; margin-top: 8px; word-break: break-all; }
+  .age-badge {
+    display: inline-block; background: #e74c3c; color: white;
+    padding: 2px 8px; border-radius: 20px; font-size: 0.7rem;
+    font-weight: bold; margin-left: 8px;
+  }
+  .weight-menu {
+    background: #1e2a2f; border-radius: 20px; padding: 16px;
+    margin-bottom: 16px; border: 2px solid #d4af37;
+  }
+  .weight-menu-header {
+    color: #ffd966; font-size: 1rem; font-weight: bold;
+    margin-bottom: 12px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap;
+  }
+  .weight-menu-categories { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .weight-category-btn {
+    padding: 8px 16px; border-radius: 40px; border: 2px solid #c9b25a;
+    background: #2c3e2f; color: #ffefb9; cursor: pointer;
+    font-size: 0.85rem; transition: all 0.2s;
+  }
+  .weight-category-btn.active { background: #d6a13e; color: #1f2a0e; border-color: #d6a13e; }
+  .weight-items {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    max-height: 120px; overflow-y: auto; padding: 4px;
+  }
+  .weight-item-btn {
+    padding: 8px 16px; border-radius: 40px; border: 2px solid #6f8f5e;
+    background: #2c3e2f; color: #b9d2a5; cursor: pointer;
+    font-size: 0.85rem; transition: all 0.2s;
+  }
+  .weight-item-btn.active { background: #4a7c59; color: white; border-color: #4a7c59; }
+  .weight-item-btn:hover { background: #4a7c59; color: white; }
+  .weight-controls {
+    display: flex; gap: 12px; margin-top: 12px;
+    align-items: center; flex-wrap: wrap;
+  }
+  .weight-controls input { flex: 1; min-width: 80px; }
+  .weight-controls label { color: #b9d2a5; font-size: 0.8rem; }
+  .weight-controls .btn { flex: 0 0 auto; }
+  .nav-hint { color: #6f8f5e; font-size: 0.7rem; margin-top: 8px; text-align: center; }
+  .terminal-status {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-radius: 40px; font-size: 0.85rem;
+    font-weight: bold; margin-bottom: 16px;
+  }
+  .terminal-status.waiting { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.4); }
+  .terminal-status.connected { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.4); }
+  .terminal-status.error { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.4); }
+  .terminal-status .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: currentColor; animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+  .pin-display { display: flex; justify-content: center; gap: 12px; margin: 16px 0; min-height: 24px; }
+  .pin-display .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #d4af37; transition: 0.2s; }
+  .pin-display .dot.filled { background: #d4af37; box-shadow: 0 0 10px #d4af37; }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .pin-pad button {
+    padding: 14px; border-radius: 12px; border: none;
+    background: #3b2a1f; color: #ffd966; font-size: 20px;
+    font-weight: bold; cursor: pointer; font-family: 'Courier New', monospace;
+  }
+  .pin-pad button:active { transform: scale(0.95); background: #4a3828; }
+  .pin-pad button.wide { grid-column: span 2; font-size: 16px; }
+
+  @media (max-width: 600px) {
+    .cashier-body { padding: 8px; }
+    .panel-cashier { padding: 12px; }
+    .total-amount { font-size: 1.2rem; }
+    .cashier-body button { padding: 8px 14px; font-size: 0.8rem; }
+    .card-item { min-width: 100%; }
+    .weight-category-btn, .weight-item-btn { padding: 6px 12px; font-size: 0.75rem; }
+  }
 </style>
 </head>
 <body>
 
 <div class="device-indicator" id="deviceIndicator"></div>
 
-<!-- ================= КАССА (ПК) ================= -->
-<div class="app-container hidden" id="cashierApp">
-  <div class="panel">
-    <h1>💼 Касса</h1>
-    <div class="sub" id="cashierSubtitle">Введите ID терминала</div>
+<!-- ================= ТЕРМИНАЛ (ТЕЛЕФОН) ================= -->
+<div class="terminal-wrap hidden" id="terminalWrap">
+  <div class="app-container">
+    <div class="panel">
+      <h1>📟 Терминал</h1>
+      <div class="sub" id="terminalSubtitle">Создайте ID и сообщите кассиру</div>
 
-    <div id="cashierStep1">
-      <div class="input-group">
-        <label>ID терминала (4 цифры)</label>
-        <input type="tel" id="cashierIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
+      <div id="terminalStep1">
+        <button class="btn btn-primary" style="width:100%;padding:18px;font-size:16px;" onclick="terminalCreate()">
+          ✨ Создать терминал
+        </button>
       </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="cashierConnect()">🔌 Подключиться к терминалу</button>
-      <button class="btn btn-ghost" style="width:100%;margin-top:8px;" id="cashierNewTerminalBtn" onclick="cashierCreateNewTerminal()">✨ Создать новый терминал</button>
-    </div>
 
-    <div id="cashierStep2" class="hidden">
-      <div class="status-badge pending" style="margin-bottom:16px;">
-        <span>⏳</span> Ожидание подтверждения терминала...
+      <div id="terminalStep2" class="hidden">
+        <div class="status-badge waiting" id="terminalStatusBadge">
+          <span>⏳</span> Ожидание кассы
+        </div>
+        <div class="terminal-id-display" id="terminalIdDisplay">----</div>
+        <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:16px;">
+          Сообщите этот ID кассиру
+        </div>
+        <button class="btn btn-ghost" style="width:100%;" onclick="terminalNewId()">🔄 Создать новый ID</button>
       </div>
-      <div class="screen">
-        <div class="title">ID терминала</div>
-        <div class="message" id="cashierTerminalIdDisplay">----</div>
-      </div>
-      <button class="btn btn-ghost" style="width:100%;" onclick="cashierReset()">❌ Отмена</button>
-    </div>
 
-    <div id="cashierStep3" class="hidden">
-      <div class="status-badge connected" style="margin-bottom:16px;">
-        <span>✅</span> Терминал подключён
+      <div id="terminalStep3" class="hidden">
+        <div class="status-badge pending" style="margin-bottom:16px;">
+          <span>⏳</span> Касса подключается...
+        </div>
+        <div class="screen">
+          <div class="title">Запрос на подключение</div>
+          <div class="message">Касса хочет подключиться</div>
+        </div>
+        <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="terminalConfirm()" id="terminalConfirmBtn">
+          ✅ Подтвердить подключение
+        </button>
+        <button class="btn btn-ghost" style="width:100%;" onclick="terminalNewOperation()">❌ Отмена</button>
       </div>
-      <div class="input-group">
-        <label>Сумма к оплате (₽)</label>
-        <input type="number" id="cashierAmount" placeholder="0.00" min="1" step="0.01">
-      </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="cashierSendAmount()" id="cashierSendAmountBtn">
-        💳 Отправить на терминал
-      </button>
-      <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="cashierReset()">❌ Отмена</button>
-    </div>
 
-    <div id="cashierStep4" class="hidden">
-      <div class="status-badge pending" style="margin-bottom:16px;">
-        <span>⏳</span> Ожидание PIN-кода клиента...
+      <div id="terminalStep4" class="hidden">
+        <div class="status-badge connected" style="margin-bottom:16px;">
+          <span>✅</span> Касса подключена
+        </div>
+        <div class="screen">
+          <div class="title">Готов к оплате</div>
+          <div class="message">Ожидание суммы от кассира...</div>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;" onclick="terminalNewOperation()">❌ Отмена</button>
       </div>
-      <div class="screen">
-        <div class="title">Сумма</div>
-        <div class="amount" id="cashierPendingAmount">0.00 ₽</div>
-        <div class="message" style="margin-top:12px;font-size:14px;">Клиент вводит PIN</div>
-      </div>
-      <button class="btn btn-ghost" style="width:100%;" onclick="cashierReset()">❌ Отменить</button>
-    </div>
 
-    <div id="cashierStep5" class="hidden">
-      <div id="cashierResultContent"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="cashierReset()">🔄 Новая операция</button>
+      <div id="terminalStep5" class="hidden">
+        <div class="status-badge connected" style="margin-bottom:16px;">
+          <span>✅</span> Касса подключена
+        </div>
+        <div class="screen">
+          <div class="title">К оплате</div>
+          <div class="amount" id="terminalAmountDisplay">0.00 ₽</div>
+        </div>
+        <div class="input-group">
+          <label>Введите PIN-код (4 цифры)</label>
+          <div class="pin-dots" id="terminalPinDots">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <div class="pin-keypad" id="terminalPinPad"></div>
+        </div>
+        <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="terminalSubmitPin()" id="terminalSubmitPinBtn" disabled>
+          ✅ Оплатить
+        </button>
+        <button class="btn btn-danger" style="width:100%;" onclick="terminalCancelPayment()">❌ Отказ</button>
+      </div>
+
+      <div id="terminalStep6" class="hidden">
+        <div class="loading-spinner"></div>
+        <div class="screen">
+          <div class="title">Обработка</div>
+          <div class="message">Связь с банком...</div>
+        </div>
+      </div>
+
+      <div id="terminalStep7" class="hidden">
+        <div class="confetti-container" id="confettiContainer"></div>
+        <div id="terminalResultContent" style="text-align:center;"></div>
+        <button class="btn btn-primary" style="width:100%;margin-top:24px;" onclick="terminalNewOperation()">🔄 Новая операция</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ================= ТЕРМИНАЛ (ТЕЛЕФОН) ================= -->
-<div class="app-container hidden" id="terminalApp">
-  <div class="panel">
-    <h1>📟 Терминал</h1>
-    <div class="sub" id="terminalSubtitle">Создайте ID и сообщите кассиру</div>
-
-    <div id="terminalStep1">
-      <button class="btn btn-primary" style="width:100%;padding:18px;font-size:16px;" onclick="terminalCreate()">
-        ✨ Создать терминал
-      </button>
+<!-- ================= КАССА (ПК) ================= -->
+<div class="cashier-body hidden" id="cashierBody">
+  <div class="cashier-container">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="cash">🛒 КАССА</button>
+      <button class="tab-btn" data-tab="cards">💳 КАРТЫ</button>
+      <button class="tab-btn" data-tab="products">📦 ТОВАРЫ</button>
     </div>
 
-    <div id="terminalStep2" class="hidden">
-      <div class="status-badge waiting" id="terminalStatusBadge">
-        <span>⏳</span> Ожидание кассы
+    <!-- КАССА -->
+    <div id="tab-cash" class="tab-content active">
+      <div id="terminalStatusBar" class="terminal-status waiting">
+        <span class="dot"></span>
+        <span id="terminalStatusText">Терминал не подключён</span>
+        <button id="terminalConnectBtn" class="btn-info" style="margin-left:auto;padding:6px 14px;font-size:0.75rem;">⚙️ Настроить</button>
       </div>
-      <div class="terminal-id-display" id="terminalIdDisplay">----</div>
-      <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:16px;">
-        Сообщите этот ID кассиру
-      </div>
-      <button class="btn btn-ghost" style="width:100%;" onclick="terminalNewId()">🔄 Создать новый ID</button>
-    </div>
 
-    <div id="terminalStep3" class="hidden">
-      <div class="status-badge pending" style="margin-bottom:16px;">
-        <span>⏳</span> Касса подключается...
-      </div>
-      <div class="screen">
-        <div class="title">Запрос на подключение</div>
-        <div class="message">Касса хочет подключиться</div>
-      </div>
-      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="terminalConfirm()" id="terminalConfirmBtn">
-        ✅ Подтвердить подключение
-      </button>
-      <button class="btn btn-ghost" style="width:100%;" onclick="terminalNewOperation()">❌ Отмена</button>
-    </div>
-
-    <div id="terminalStep4" class="hidden">
-      <div class="status-badge connected" style="margin-bottom:16px;">
-        <span>✅</span> Касса подключена
-      </div>
-      <div class="screen">
-        <div class="title">Готов к оплате</div>
-        <div class="message">Ожидание суммы от кассира...</div>
-      </div>
-      <button class="btn btn-ghost" style="width:100%;" onclick="terminalNewOperation()">❌ Отмена</button>
-    </div>
-
-    <div id="terminalStep5" class="hidden">
-      <div class="status-badge connected" style="margin-bottom:16px;">
-        <span>✅</span> Касса подключена
-      </div>
-      <div class="screen">
-        <div class="title">К оплате</div>
-        <div class="amount" id="terminalAmountDisplay">0.00 ₽</div>
-      </div>
-      <div class="input-group">
-        <label>Введите PIN-код (4 цифры)</label>
-        <div class="pin-dots" id="terminalPinDots">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div id="clientPanel" class="client-card hidden">
+        <div class="client-info">
+          <div class="client-badge" id="clientName">🎫 ---</div>
+          <div class="points-badge" id="clientPoints">⭐ 0 баллов</div>
         </div>
-        <div class="pin-keypad" id="terminalPinPad"></div>
+        <button id="usePointsBtn" class="btn-secondary">✨ Списать баллы</button>
+        <button id="removeCardBtn" class="btn-warning">❌ Убрать карту</button>
       </div>
-      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="terminalSubmitPin()" id="terminalSubmitPinBtn" disabled>
-        ✅ Оплатить
-      </button>
-      <button class="btn btn-danger" style="width:100%;" onclick="terminalCancelPayment()">❌ Отказ</button>
+
+      <div class="weight-menu" id="weightMenu">
+        <div class="weight-menu-header">
+          <span>⚖️ ВЕСОВЫЕ ТОВАРЫ</span>
+          <span style="font-size:0.7rem; color:#6f8f5e;">← → разделы | ↑ ↓ товары | Enter</span>
+        </div>
+        <div class="weight-menu-categories" id="weightCategories"></div>
+        <div class="weight-items" id="weightItems"></div>
+        <div class="weight-controls">
+          <input type="number" id="weightQuantity" value="1" min="0.1" step="0.1" placeholder="Вес/кол-во">
+          <label id="weightUnitLabel">кг</label>
+          <button id="addWeightBtn" class="btn-success">➕ Добавить</button>
+          <button id="closeWeightBtn" class="btn-close">✕</button>
+        </div>
+        <div class="nav-hint">⬅️ ➡️ разделы | ⬆️ ⬇️ товары | Enter - добавить</div>
+      </div>
+
+      <div class="panel-cashier">
+        <div class="cart-header">
+          <h2>🛒 Корзина</h2>
+          <div class="total-amount">💰 <span id="totalAmount">0.00</span> ₽</div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Товар</th><th>Цена</th><th>Кол-во</th><th>Сумма</th><th></th></tr>
+            </thead>
+            <tbody id="cartBody"><tr><td colspan="5" style="text-align:center;">Корзина пуста</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel-cashier">
+        <div class="scanner-bar">
+          <div class="form-group">
+            <label>🔍 Сканируйте штрихкод</label>
+            <input type="text" id="barcodeInput" placeholder="Товар, карта, *число, /пакет" autofocus>
+          </div>
+          <div class="form-group">
+            <label>📦 Количество</label>
+            <input type="number" id="quantityInput" value="1" min="1">
+          </div>
+          <button id="addBtn">➕ Добавить</button>
+          <button id="clearCartBtn" class="btn-warning">🗑 Очистить</button>
+        </div>
+        <div class="message" id="infoMessage">
+          💡 *5 - изменить последний | 💡 / - пакет (6₽)<br>
+          🎫 Скидочная: <strong>2020398190402</strong> | 🔄 Отмена: <strong>3330007699509</strong><br>
+          ⚖️ Стрелки для весовых товаров | 🥖 Выпечка - поштучно
+        </div>
+      </div>
+
+      <div class="panel-cashier">
+        <button id="paymentBtn" class="btn-success" style="width:100%;padding:14px;">💵 ОПЛАТИТЬ</button>
+        <div id="paymentStatus" class="message" style="margin-top:12px;text-align:center;">ГОТОВ</div>
+      </div>
     </div>
 
-    <div id="terminalStep6" class="hidden">
-      <div class="loading-spinner"></div>
-      <div class="screen">
-        <div class="title">Обработка</div>
-        <div class="message">Связь с банком...</div>
+    <!-- КАРТЫ -->
+    <div id="tab-cards" class="tab-content">
+      <div class="panel-cashier">
+        <h3 class="panel-title">💳 КАРТЫ МАГАЗИНА</h3>
+        <div class="card-row">
+          <div class="card-item discount" id="discountCard">
+            <div class="card-title">🎫 СКИДОЧНАЯ КАРТА</div>
+            <div class="card-barcode">2020398190402</div>
+          </div>
+          <div class="card-item cancel" id="cancelCard">
+            <div class="card-title">🔄 КАРТА ОТМЕНЫ</div>
+            <div class="card-barcode">3330007699509</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-cashier">
+        <h3 class="panel-title">💳 ЭЛЕКТРОННАЯ КАРТА</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Имя</label><input type="text" id="regName" placeholder="Иван Петров"></div>
+          <div class="form-group"><label>Телефон</label><input type="tel" id="regPhone" placeholder="+7 900 123-45-67"></div>
+          <button id="registerCardBtn" class="btn-success">🎫 Выдать карту</button>
+        </div>
+      </div>
+
+      <div class="panel-cashier">
+        <h3 class="panel-title">🔍 ПОИСК КАРТЫ</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Телефон</label><input type="tel" id="searchPhone" placeholder="+7 900 123-45-67"></div>
+          <button id="searchCardBtn" class="btn-info">🔍 Найти</button>
+        </div>
+        <div id="searchResult" class="message hidden"></div>
+      </div>
+
+      <div class="panel-cashier">
+        <h3 class="panel-title">📋 КЛИЕНТЫ</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Имя</th><th>Телефон</th><th>Штрихкод</th><th>Баллы</th><th>Действия</th></tr></thead>
+            <tbody id="clientsList"><tr><td colspan="5">Загрузка...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div id="terminalStep7" class="hidden">
-      <div class="confetti-container" id="confettiContainer"></div>
-      <div id="terminalResultContent" style="text-align:center;"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:24px;" onclick="terminalNewOperation()">🔄 Новая операция</button>
+    <!-- ТОВАРЫ -->
+    <div id="tab-products" class="tab-content">
+      <div class="panel-cashier">
+        <h3 class="panel-title">➕ ДОБАВИТЬ ТОВАР</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Штрихкод</label><input type="text" id="newBarcode" placeholder="4601234567890"></div>
+          <div class="form-group"><label>Название</label><input type="text" id="newName" placeholder="Молоко"></div>
+          <div class="form-group"><label>Цена (₽)</label><input type="number" id="newPrice" step="0.01" placeholder="89.90"></div>
+          <div class="form-group"><label>Цена со скидкой</label><input type="number" id="newDiscount" step="0.01" placeholder="79.90"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>🔞 Возрастное ограничение</label>
+            <select id="newAgeRestricted">
+              <option value="false">Нет</option>
+              <option value="true">18+</option>
+            </select>
+          </div>
+          <button id="addProductBtn" class="btn-success">➕ Добавить товар</button>
+        </div>
+      </div>
+
+      <div class="panel-cashier">
+        <h3 class="panel-title">📦 СПИСОК ТОВАРОВ</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Штрихкод</th><th>Название</th><th>Цена</th><th>Со скидкой</th><th>18+</th><th>Действия</th></tr></thead>
+            <tbody id="productsList"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
+
+    <!-- НАСТРОЙКА ТЕРМИНАЛА -->
+    <div id="tab-terminal" class="tab-content">
+      <div class="panel-cashier">
+        <h3 class="panel-title">📟 НАСТРОЙКА ТЕРМИНАЛА</h3>
+        <p style="color:#b9d2a5;font-size:0.85rem;margin-bottom:12px;">
+          Введите ID терминала один раз. Он запомнится, и при следующем открытии кассы подключаться не придётся.
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>ID терминала (4 цифры)</label>
+            <input type="tel" id="terminalIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
+          </div>
+          <button id="terminalSaveBtn" class="btn-success">💾 Сохранить и подключиться</button>
+          <button id="terminalForgetBtn" class="btn-danger">🗑 Забыть</button>
+        </div>
+
+        <div style="color:#b9d2a5;font-size:0.8rem;margin-top:12px;line-height:1.6;">
+          <strong>Как это работает:</strong><br>
+          1. На телефоне-терминале создайте терминал — получите 4-значный ID<br>
+          2. Введите его здесь и нажмите «Сохранить»<br>
+          3. При оплате картой сумма уйдёт на терминал<br>
+          4. PIN нужен <strong>только если сумма больше 1000 ₽</strong> — клиент вводит любой 4-значный PIN
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка отмены (для кассы) -->
+<div id="cancelModal" class="modal">
+  <div class="modal-content">
+    <h3>🔄 ОТМЕНА ТОВАРА</h3>
+    <div class="form-group">
+      <label>📦 Товар:</label>
+      <select id="cancelProductSelect" style="width:100%; padding:10px; border-radius:40px; margin-bottom:16px;"></select>
+    </div>
+    <div class="form-group">
+      <label>🔢 Количество:</label>
+      <input type="number" id="cancelQuantity" value="1" min="1" step="1">
+    </div>
+    <div class="form-group">
+      <label>💰 Сумма отмены:</label>
+      <input type="text" id="cancelAmount" readonly style="background:#f0f0f0;">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button id="confirmCancelBtn" class="btn-danger" style="flex:1;">✅ ОТМЕНИТЬ</button>
+      <button id="closeCancelModalBtn" class="btn-warning" style="flex:1;">❌ ОТМЕНА</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка оплаты (для кассы) -->
+<div id="paymentModal" class="modal">
+  <div class="modal-content">
+    <h3>💳 ВЫБЕРИТЕ СПОСОБ ОПЛАТЫ</h3>
+    <div class="payment-methods">
+      <div class="payment-method" data-method="cash">💵 НАЛИЧНЫЕ</div>
+      <div class="payment-method" data-method="card">💳 КАРТА (терминал)</div>
+    </div>
+    <div id="cashArea" class="hidden">
+      <label>💰 Сумма от покупателя:</label>
+      <input type="number" id="cashGiven" step="0.01" placeholder="Введите сумму">
+      <div id="changeArea" class="change-area hidden">
+        <p>💵 Сдача:</p>
+        <p class="change-amount" id="changeAmount">0.00 ₽</p>
+      </div>
+    </div>
+    <div id="cardArea" class="hidden" style="background:#1e2a1c;padding:12px;border-radius:24px;">
+      <p style="color:#ffd966;margin-bottom:8px;">💳 Оплата через терминал</p>
+      <p style="color:#b9d2a5;font-size:0.85rem;">
+        Сумма уйдёт на терминал. PIN нужен только при сумме &gt; 1000 ₽.
+      </p>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button id="confirmPaymentBtn" style="flex:1;">✅ ПОДТВЕРДИТЬ</button>
+      <button id="closeModalBtn" class="btn-warning" style="flex:1;">❌ ОТМЕНА</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка ожидания терминала (для кассы) -->
+<div id="terminalWaitModal" class="modal">
+  <div class="modal-content">
+    <h3 id="terminalWaitTitle">📟 Связь с терминалом</h3>
+    <p id="terminalWaitText">Отправка суммы на терминал...</p>
+    <div class="pin-display" id="pinDisplay"></div>
+    <div id="pinPadContainer" class="hidden">
+      <p style="color:#ffd966;margin-bottom:8px;font-size:0.9rem;">Введите PIN (любые 4 цифры)</p>
+      <div class="pin-pad" id="pinPad"></div>
+      <button id="submitPinBtn" class="btn-success" style="width:100%;" disabled>✅ Подтвердить</button>
+    </div>
+    <button id="cancelTerminalBtn" class="btn-danger" style="width:100%;margin-top:12px;">❌ Отмена</button>
   </div>
 </div>
 
@@ -295,38 +674,41 @@ const db = getDatabase(app);
 const TERMINALS_PATH = 'payment_terminals';
 const RESET_STATUS = {
   status: 'waiting_connection',
-  amount: 0,
-  pin: null,
-  result: null,
-  failReason: null,
-  _lastAmount: null,
-  updatedAt: Date.now()
+  amount: 0, pin: null, result: null, failReason: null,
+  _lastAmount: null, updatedAt: Date.now()
 };
 
-// ==================== ОПРЕДЕЛЕНИЕ УСТРОЙСТВА ====================
+// ===== ОПРЕДЕЛЕНИЕ УСТРОЙСТВА =====
 function isPhone() {
-  // Телефон = маленький экран ИЛИ touch-устройство
   const smallScreen = window.innerWidth <= 820;
-  const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
   const ua = navigator.userAgent.toLowerCase();
   const mobileUA = /android|iphone|ipad|ipod|mobile/.test(ua);
-  return smallScreen || mobileUA || (isTouch && smallScreen);
+  return smallScreen || mobileUA;
 }
-
 const IS_PHONE = isPhone();
 
-// ==================== СОСТОЯНИЕ ====================
+// ===== ПОКАЗ =====
+function initByDevice() {
+  const indicator = document.getElementById('deviceIndicator');
+  indicator.textContent = IS_PHONE ? '📱 Терминал' : '💻 Касса';
+  if (IS_PHONE) {
+    document.getElementById('terminalWrap').classList.remove('hidden');
+    document.getElementById('cashierBody').classList.add('hidden');
+    showTerminalStep(1);
+  } else {
+    document.getElementById('cashierBody').classList.remove('hidden');
+    document.getElementById('terminalWrap').classList.add('hidden');
+    initCashier();
+  }
+}
+
+// ==================== ТЕРМИНАЛ (телефон) ====================
 let state = {
-  role: IS_PHONE ? 'terminal' : 'cashier',
   myTerminalId: null,
-  connectedCashierTo: null,
-  pin: '',
-  pinLength: 4,
-  terminalUnsubscribe: null,
-  cashierUnsubscribe: null,
+  pin: '', pinLength: 4,
+  terminalUnsubscribe: null
 };
 
-// ==================== УТИЛИТЫ ====================
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -337,132 +719,6 @@ function showToast(msg) {
 
 function genId() { return String(Math.floor(1000 + Math.random() * 9000)); }
 
-// ==================== ПОКАЗ ЭКРАНА ПО РОЛИ ====================
-function initByDevice() {
-  const indicator = document.getElementById('deviceIndicator');
-  indicator.textContent = IS_PHONE ? '📱 Терминал' : '💻 Касса';
-
-  if (IS_PHONE) {
-    document.getElementById('terminalApp').classList.remove('hidden');
-    document.getElementById('cashierApp').classList.add('hidden');
-    showTerminalStep(1);
-  } else {
-    document.getElementById('cashierApp').classList.remove('hidden');
-    document.getElementById('terminalApp').classList.add('hidden');
-    showCashierStep(1);
-  }
-}
-
-// ==================== КАССА ====================
-function showCashierStep(n) {
-  [1,2,3,4,5].forEach(i => {
-    document.getElementById('cashierStep' + i).classList.toggle('hidden', i !== n);
-  });
-}
-
-function cashierReset() {
-  if (state.cashierUnsubscribe) { state.cashierUnsubscribe(); state.cashierUnsubscribe = null; }
-  state.connectedCashierTo = null;
-  showCashierStep(1);
-  document.getElementById('cashierIdInput').value = '';
-  document.getElementById('cashierAmount').value = '';
-  document.getElementById('cashierSendAmountBtn').disabled = false;
-}
-
-async function cashierConnect() {
-  const id = document.getElementById('cashierIdInput').value.trim();
-  if (id.length !== 4) { showToast('Введите 4-значный ID'); return; }
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
-  try {
-    const snap = await get(terminalRef);
-    if (!snap.exists()) { showToast('Терминал не найден'); return; }
-    const data = snap.val();
-    if (data.status !== 'waiting_connection') { showToast('Терминал занят'); return; }
-    state.connectedCashierTo = id;
-    await update(terminalRef, { status: 'pending_connection', clientConnectedAt: Date.now(), updatedAt: Date.now() });
-    document.getElementById('cashierTerminalIdDisplay').textContent = id;
-    showCashierStep(2);
-    subscribeCashier(id);
-    showToast('Запрос отправлен на терминал');
-  } catch (err) { showToast('Ошибка: ' + err.message); }
-}
-
-// Создать новый терминал прямо с ПК (на случай, если телефон недоступен)
-async function cashierCreateNewTerminal() {
-  const id = genId();
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
-  try {
-    await set(terminalRef, {
-      status: 'waiting_connection',
-      amount: 0, pin: null, result: null,
-      createdAt: Date.now(), updatedAt: Date.now()
-    });
-    state.connectedCashierTo = id;
-    document.getElementById('cashierIdInput').value = id;
-    showToast(`Терминал ${id} создан. Подключаемся...`);
-    // Небольшая задержка перед подключением
-    setTimeout(() => cashierConnect(), 300);
-  } catch (err) { showToast('Ошибка: ' + err.message); }
-}
-
-function subscribeCashier(id) {
-  if (state.cashierUnsubscribe) state.cashierUnsubscribe();
-  state.cashierUnsubscribe = onValue(ref(db, `${TERMINALS_PATH}/${id}`), (snap) => {
-    const data = snap.val();
-    if (!data) { showToast('Терминал отключён'); cashierReset(); return; }
-    updateCashierUI(data);
-  }, (err) => console.error('Cash sub err:', err));
-}
-
-function updateCashierUI(data) {
-  const s = data.status;
-  if (s === 'waiting_connection') {
-    if (state.connectedCashierTo) { showToast('Терминал сбросил операцию'); cashierReset(); return; }
-    showCashierStep(1);
-  } else if (s === 'pending_connection') {
-    showCashierStep(2);
-  } else if (s === 'connected') {
-    showCashierStep(3);
-    document.getElementById('cashierSendAmountBtn').disabled = false;
-  } else if (s === 'waiting_pin') {
-    showCashierStep(4);
-    document.getElementById('cashierPendingAmount').textContent = (data.amount || 0).toFixed(2) + ' ₽';
-  } else if (s === 'processing') {
-    showCashierStep(4);
-  } else if (s === 'success' || s === 'fail') {
-    showCashierStep(5);
-    const c = document.getElementById('cashierResultContent');
-    if (s === 'success') {
-      c.innerHTML = `
-        <div class="result-icon">✅</div>
-        <h2 style="text-align:center;color:var(--green);margin-bottom:8px;">Успешно</h2>
-        <div style="text-align:center;font-size:18px;font-weight:700;">Оплата ${(data.amount||0).toFixed(2)} ₽</div>
-        <div style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:8px;">PIN подтверждён</div>`;
-    } else {
-      c.innerHTML = `
-        <div class="result-icon">❌</div>
-        <h2 style="text-align:center;color:var(--red);margin-bottom:8px;">Отказ</h2>
-        <div style="text-align:center;font-size:14px;color:var(--text-muted);">
-          ${data.failReason === 'wrong_pin' ? 'Неверный PIN-код' : 'Операция отклонена'}
-        </div>`;
-    }
-  }
-}
-
-async function cashierSendAmount() {
-  const amount = parseFloat(document.getElementById('cashierAmount').value);
-  if (!amount || amount <= 0) { showToast('Введите корректную сумму'); return; }
-  if (!state.connectedCashierTo) return;
-  try {
-    await update(ref(db, `${TERMINALS_PATH}/${state.connectedCashierTo}`), {
-      status: 'waiting_pin', amount: amount, _lastAmount: amount, updatedAt: Date.now()
-    });
-    showToast(`Сумма ${amount.toFixed(2)} ₽ отправлена`);
-    document.getElementById('cashierSendAmountBtn').disabled = true;
-  } catch (err) { showToast('Ошибка: ' + err.message); }
-}
-
-// ==================== ТЕРМИНАЛ ====================
 function showTerminalStep(n) {
   [1,2,3,4,5,6,7].forEach(i => {
     document.getElementById('terminalStep' + i).classList.toggle('hidden', i !== n);
@@ -474,8 +730,7 @@ async function terminalCreate() {
   const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
   try {
     await set(terminalRef, {
-      status: 'waiting_connection',
-      amount: 0, pin: null, result: null,
+      status: 'waiting_connection', amount: 0, pin: null, result: null,
       createdAt: Date.now(), updatedAt: Date.now()
     });
     onDisconnect(terminalRef).remove();
@@ -493,7 +748,6 @@ function subscribeTerminal(id) {
     const data = snap.val();
     if (!data) {
       if (state.myTerminalId === id) {
-        showToast('Терминал закрыт');
         state.myTerminalId = null;
         showTerminalStep(1);
       }
@@ -519,11 +773,7 @@ function updateTerminalUI(data) {
     const wasStep = !document.getElementById('terminalStep5').classList.contains('hidden');
     showTerminalStep(5);
     document.getElementById('terminalAmountDisplay').textContent = (data.amount || 0).toFixed(2) + ' ₽';
-    if (!wasStep) {
-      state.pin = '';
-      updatePinDots();
-      buildPinPad();
-    }
+    if (!wasStep) { state.pin = ''; updatePinDots(); buildPinPad(); }
   } else if (s === 'processing') {
     showTerminalStep(6);
   } else if (s === 'success' || s === 'fail') {
@@ -563,7 +813,7 @@ async function terminalNewOperation() {
   if (!state.myTerminalId) { showTerminalStep(1); return; }
   try {
     await update(ref(db, `${TERMINALS_PATH}/${state.myTerminalId}`), RESET_STATUS);
-    showToast('Терминал готов к новой операции');
+    showToast('Готов к новой операции');
   } catch (err) { showToast('Ошибка: ' + err.message); }
 }
 
@@ -577,14 +827,12 @@ async function terminalNewId() {
   showTerminalStep(1);
 }
 
-// ==================== PIN ====================
 function buildPinPad() {
   const pad = document.getElementById('terminalPinPad');
   if (!pad) return;
   pad.innerHTML = '';
   const btns = [
-    { k:'1' },{ k:'2' },{ k:'3' },
-    { k:'4' },{ k:'5' },{ k:'6' },
+    { k:'1' },{ k:'2' },{ k:'3' },{ k:'4' },{ k:'5' },{ k:'6' },
     { k:'7' },{ k:'8' },{ k:'9' },
     { k:'C', cls:'wide', act:'clear' },{ k:'0' },{ k:'⌫', act:'back' }
   ];
@@ -616,7 +864,6 @@ async function terminalSubmitPin() {
   showTerminalStep(6);
   try {
     await new Promise(r => setTimeout(r, 2000));
-    // ЛЮБОЙ PIN принимается, как вы просили ранее
     await update(ref(db, `${TERMINALS_PATH}/${state.myTerminalId}`), {
       status: 'success', result: 'success', pin: '***', updatedAt: Date.now()
     });
@@ -635,7 +882,6 @@ async function terminalCancelPayment() {
   } catch (err) { console.error(err); }
 }
 
-// ==================== КОНФЕТТИ ====================
 function spawnConfetti() {
   const c = document.getElementById('confettiContainer');
   if (!c) return;
@@ -656,11 +902,822 @@ function spawnConfetti() {
   }
 }
 
-// ==================== ЭКСПОРТ ====================
-window.cashierConnect = cashierConnect;
-window.cashierCreateNewTerminal = cashierCreateNewTerminal;
-window.cashierReset = cashierReset;
-window.cashierSendAmount = cashierSendAmount;
+// ==================== КАССА (ПК) ====================
+let cashier = {
+  products: [],
+  clients: [],
+  cart: [],
+  nextId: 1,
+  currentClient: null,
+  discountAmount: 0,
+  selectedMethod: null,
+  terminalId: localStorage.getItem('pos_terminal_id') || '',
+  terminalStatus: 'disconnected',
+  currentTerminalData: null,
+  terminalUnsubscribe: null,
+  waitModal: { open: false, resolve: null },
+  currentCategoryIndex: 0,
+  currentItemIndex: 0,
+};
+
+const PIN_REQUIRED_FROM = 1000;
+
+const DISCOUNT_CARD_BARCODE = "2020398190402";
+const CANCEL_CARD_BARCODE = "3330007699509";
+
+const weightData = {
+  '🍎 Фрукты': ['Яблоки', 'Бананы', 'Апельсины', 'Груши', 'Виноград', 'Киви', 'Манго', 'Авокадо', 'Лимон', 'Грейпфрут'],
+  '🥕 Овощи': ['Помидоры', 'Огурцы', 'Картофель', 'Морковь', 'Лук', 'Капуста', 'Перец', 'Чеснок', 'Свекла', 'Кабачки'],
+  '🥖 Выпечка (шт)': ['Хлеб белый', 'Хлеб черный', 'Батон', 'Булочка', 'Круассан', 'Пирожок', 'Кекс', 'Печенье'],
+  '🍬 Конфеты весовые': ['Карамель', 'Шоколадные', 'Мармелад', 'Ирис', 'Леденцы', 'Трюфели', 'Конфеты с орехами'],
+  '🦐 Морепродукты': ['Креветки', 'Мидии', 'Осьминог', 'Кальмар', 'Рыба', 'Краб', 'Лангустины', 'Устрицы']
+};
+const weightPrices = {
+  'Яблоки': 65, 'Бананы': 55, 'Апельсины': 70, 'Груши': 85, 'Виноград': 120,
+  'Киви': 50, 'Манго': 150, 'Авокадо': 110, 'Лимон': 40, 'Грейпфрут': 45,
+  'Помидоры': 90, 'Огурцы': 55, 'Картофель': 35, 'Морковь': 25, 'Лук': 20,
+  'Капуста': 30, 'Перец': 80, 'Чеснок': 120, 'Свекла': 25, 'Кабачки': 40,
+  'Хлеб белый': 35, 'Хлеб черный': 30, 'Батон': 28, 'Булочка': 18, 'Круассан': 40,
+  'Пирожок': 35, 'Кекс': 45, 'Печенье': 55,
+  'Карамель': 80, 'Шоколадные': 120, 'Мармелад': 100, 'Ирис': 70, 'Леденцы': 55,
+  'Трюфели': 160, 'Конфеты с орехами': 130,
+  'Креветки': 320, 'Мидии': 250, 'Осьминог': 280, 'Кальмар': 200, 'Рыба': 350,
+  'Краб': 420, 'Лангустины': 380, 'Устрицы': 480
+};
+const categories = Object.keys(weightData);
+
+function initCashier() {
+  loadData();
+  renderCart();
+  updateTerminalStatusUI();
+  if (cashier.terminalId) {
+    document.getElementById('terminalIdInput').value = cashier.terminalId;
+    subscribeTerminalFromCashier();
+  }
+  bindCashierEvents();
+  showCashierMessage("✅ Касса готова! Настройте терминал во вкладке «Терминал».", false);
+}
+
+function showCashierMessage(msg, isErr = false) {
+  const div = document.getElementById('infoMessage');
+  div.innerHTML = isErr ? `⚠️ ${msg}` : `✅ ${msg}`;
+  div.style.borderLeftColor = isErr ? '#d9534f' : '#ffd966';
+  setTimeout(() => {
+    if (document.getElementById('infoMessage').innerHTML === div.innerHTML) {
+      document.getElementById('infoMessage').innerHTML = '💡 *5 - изменить последний | 💡 / - пакет (6₽)<br>🎫 Скидочная: 2020398190402<br>🔄 Отмена: 3330007699509';
+    }
+  }, 3000);
+}
+
+// ===== ДАННЫЕ КАССЫ =====
+function loadData() {
+  const sp = localStorage.getItem('pos_products_v5');
+  if (sp) cashier.products = JSON.parse(sp);
+  else {
+    cashier.products = [
+      { barcode: "4601234567890", name: "Молоко", price: 89.90, discountPrice: 79.90, ageRestricted: false },
+      { barcode: "4605678901234", name: "Хлеб", price: 54.50, discountPrice: 48.50, ageRestricted: false },
+      { barcode: "5449000214911", name: "Coca-Cola", price: 95.00, discountPrice: 85.00, ageRestricted: false },
+      { barcode: "4609876543210", name: "Шоколад", price: 119.99, discountPrice: 99.99, ageRestricted: false }
+    ];
+    saveProducts();
+  }
+  const sc = localStorage.getItem('pos_clients_v5');
+  if (sc) cashier.clients = JSON.parse(sc);
+  else cashier.clients = [];
+  saveClients();
+  renderProducts();
+  renderClients();
+  updateCardsDisplay();
+  renderWeightMenu();
+}
+
+function saveProducts() { localStorage.setItem('pos_products_v5', JSON.stringify(cashier.products)); }
+function saveClients() { localStorage.setItem('pos_clients_v5', JSON.stringify(cashier.clients)); }
+
+// ===== ВЕСОВЫЕ =====
+function renderWeightMenu() {
+  const cc = document.getElementById('weightCategories');
+  const ic = document.getElementById('weightItems');
+  const ul = document.getElementById('weightUnitLabel');
+  const curCat = categories[cashier.currentCategoryIndex];
+  const isBakery = curCat.includes('Выпечка');
+  ul.textContent = isBakery ? 'шт' : 'кг';
+  cc.innerHTML = '';
+  categories.forEach((cat, idx) => {
+    const b = document.createElement('button');
+    b.className = `weight-category-btn ${idx === cashier.currentCategoryIndex ? 'active' : ''}`;
+    b.textContent = cat;
+    b.onclick = () => { cashier.currentCategoryIndex = idx; cashier.currentItemIndex = 0; renderWeightMenu(); };
+    cc.appendChild(b);
+  });
+  const items = weightData[curCat] || [];
+  ic.innerHTML = '';
+  items.forEach((item, idx) => {
+    const b = document.createElement('button');
+    b.className = `weight-item-btn ${idx === cashier.currentItemIndex ? 'active' : ''}`;
+    const price = weightPrices[item] || 0;
+    const unit = isBakery ? 'шт' : 'кг';
+    b.textContent = `${item} (${price} ₽/${unit})`;
+    b.onclick = () => { cashier.currentItemIndex = idx; renderWeightMenu(); };
+    ic.appendChild(b);
+  });
+}
+
+function addWeightItem() {
+  const curCat = categories[cashier.currentCategoryIndex];
+  const items = weightData[curCat] || [];
+  const itemName = items[cashier.currentItemIndex];
+  if (!itemName) { showCashierMessage("❌ Выберите товар!", true); return; }
+  const qty = parseFloat(document.getElementById('weightQuantity').value) || 1;
+  const pricePerUnit = weightPrices[itemName] || 0;
+  const isBakery = curCat.includes('Выпечка');
+  const price = cashier.currentClient ? pricePerUnit * 0.9 : pricePerUnit;
+  const unit = isBakery ? 'шт' : 'кг';
+  const existing = cashier.cart.find(i => i.name === itemName && i.barcode === 'WEIGHT');
+  if (existing) {
+    existing.quantity += qty;
+    showCashierMessage(`➕ ${itemName} +${qty.toFixed(2)} ${unit}`, false);
+  } else {
+    cashier.cart.push({
+      id: cashier.nextId++, barcode: 'WEIGHT', name: itemName, price: price,
+      quantity: qty, ageRestricted: false, isWeight: true, unit: unit
+    });
+    showCashierMessage(`✅ ${itemName} добавлен`, false);
+  }
+  renderCart();
+  document.getElementById('weightQuantity').value = 1;
+}
+
+// ===== ТОВАРЫ =====
+function renderProducts() {
+  const tb = document.getElementById('productsList');
+  if (cashier.products.length === 0) {
+    tb.innerHTML = '<tr><td colspan="6">Нет товаров</td></tr>';
+    return;
+  }
+  let html = '';
+  cashier.products.forEach((p, i) => {
+    const age = p.ageRestricted ? '<span class="age-badge">18+</span>' : '';
+    html += `<tr>
+      <td style="font-family:monospace;">${p.barcode}</td>
+      <td>${p.name} ${age}</td>
+      <td>${p.price.toFixed(2)} ₽</td>
+      <td>${p.discountPrice.toFixed(2)} ₽</td>
+      <td>${p.ageRestricted ? '🔞' : '✅'}</td>
+      <td>
+        <button class="edit-product" data-index="${i}" style="background:#d6a13e;padding:4px 10px;margin-right:5px;">✏️</button>
+        <button class="delete-product" data-index="${i}" style="background:#b13e3e;color:white;padding:4px 10px;">🗑</button>
+      </td>
+    </tr>`;
+  });
+  tb.innerHTML = html;
+  document.querySelectorAll('.edit-product').forEach(b => {
+    b.onclick = () => {
+      const i = parseInt(b.dataset.index);
+      const p = cashier.products[i];
+      const np = prompt('Новая цена:', p.price);
+      const nd = prompt('Цена со скидкой:', p.discountPrice);
+      const na = confirm('18+? Сейчас: ' + (p.ageRestricted ? 'Да' : 'Нет'));
+      if (np && nd) {
+        cashier.products[i].price = parseFloat(np);
+        cashier.products[i].discountPrice = parseFloat(nd);
+        cashier.products[i].ageRestricted = na;
+        saveProducts(); renderProducts();
+        showCashierMessage(`✅ Обновлено`, false);
+      }
+    };
+  });
+  document.querySelectorAll('.delete-product').forEach(b => {
+    b.onclick = () => {
+      const i = parseInt(b.dataset.index);
+      if (confirm('Удалить "' + cashier.products[i].name + '"?')) {
+        cashier.products.splice(i, 1);
+        saveProducts(); renderProducts();
+        showCashierMessage(`✅ Удалено`, false);
+      }
+    };
+  });
+}
+
+function addProduct(barcode, name, price, discount, age) {
+  if (!barcode || !name) { showCashierMessage("❌ Заполните поля!", true); return; }
+  if (isNaN(price) || price <= 0) { showCashierMessage("❌ Цена!", true); return; }
+  if (isNaN(discount) || discount <= 0) { showCashierMessage("❌ Цена со скидкой!", true); return; }
+  if (cashier.products.find(p => p.barcode === barcode)) {
+    showCashierMessage("❌ Такой штрихкод уже есть!", true); return;
+  }
+  cashier.products.push({
+    barcode: barcode.trim(), name: name.trim(),
+    price: parseFloat(price), discountPrice: parseFloat(discount),
+    ageRestricted: age === 'true'
+  });
+  saveProducts(); renderProducts();
+  showCashierMessage(`✅ Товар "${name}" добавлен!`, false);
+}
+
+// ===== КАРТЫ =====
+function generateBarcode() { return '29' + Math.floor(Math.random() * 10000000000).toString().padStart(10, '0'); }
+
+function registerClient(name, phone) {
+  if (!name || !phone) { showCashierMessage("❌ Заполните поля!", true); return; }
+  const barcode = generateBarcode();
+  const clean = phone.replace(/\D/g, '');
+  if (cashier.clients.find(c => c.phone.replace(/\D/g, '') === clean)) {
+    showCashierMessage("❌ Клиент уже существует!", true); return;
+  }
+  cashier.clients.push({ id: barcode, name: name.trim(), phone: phone.trim(), barcode, balance: 0, totalSpent: 0 });
+  saveClients(); renderClients();
+  showCashierMessage(`✅ Карта создана! Штрихкод: ${barcode}`, false);
+}
+
+function loadClientByBarcode(barcode) {
+  if (barcode === DISCOUNT_CARD_BARCODE) {
+    cashier.currentClient = { id: DISCOUNT_CARD_BARCODE, name: "Скидочная карта", type: "plastic", balance: 0 };
+    document.getElementById('clientName').innerHTML = `🎫 ${cashier.currentClient.name}`;
+    document.getElementById('clientPoints').innerHTML = `⭐ Скидка`;
+    document.getElementById('clientPanel').classList.remove('hidden');
+    updateCartPrices();
+    showCashierMessage(`🎫 Скидочная карта активирована!`, false);
+    return true;
+  }
+  const c = cashier.clients.find(x => x.barcode === barcode);
+  if (c) {
+    cashier.currentClient = { ...c, type: "electronic" };
+    document.getElementById('clientName').innerHTML = `🎫 ${cashier.currentClient.name}`;
+    document.getElementById('clientPoints').innerHTML = `⭐ ${cashier.currentClient.balance} баллов`;
+    document.getElementById('clientPanel').classList.remove('hidden');
+    updateCartPrices();
+    showCashierMessage(`💳 Карта: ${cashier.currentClient.name}`, false);
+    return true;
+  }
+  return false;
+}
+
+function updateCartPrices() {
+  let updated = false;
+  cashier.cart.forEach(item => {
+    if (item.barcode !== 'PACKAGE' && item.barcode !== 'WEIGHT') {
+      const p = cashier.products.find(x => x.barcode === item.barcode);
+      if (p) {
+        const newPrice = cashier.currentClient ? p.discountPrice : p.price;
+        if (item.price !== newPrice) { item.price = newPrice; updated = true; }
+      }
+    }
+  });
+  if (updated) renderCart();
+}
+
+function searchClientByPhone(phone) {
+  return cashier.clients.find(c => c.phone.replace(/\D/g, '') === phone.replace(/\D/g, ''));
+}
+
+function renderClients() {
+  const tb = document.getElementById('clientsList');
+  if (cashier.clients.length === 0) { tb.innerHTML = '<tr><td colspan="5">Нет клиентов</td></tr>'; return; }
+  let html = '';
+  cashier.clients.forEach((c, i) => {
+    html += `<tr>
+      <td>${c.name}</td><td>${c.phone}</td>
+      <td style="font-family:monospace;">${c.barcode}</td><td>${c.balance}</td>
+      <td><button class="select-client" data-index="${i}" style="background:#d6a13e;padding:4px 12px;">Выбрать</button></td>
+    </tr>`;
+  });
+  tb.innerHTML = html;
+  document.querySelectorAll('.select-client').forEach(b => {
+    b.onclick = () => {
+      const i = parseInt(b.dataset.index);
+      cashier.currentClient = { ...cashier.clients[i], type: "electronic" };
+      document.getElementById('clientName').innerHTML = `🎫 ${cashier.currentClient.name}`;
+      document.getElementById('clientPoints').innerHTML = `⭐ ${cashier.currentClient.balance} баллов`;
+      document.getElementById('clientPanel').classList.remove('hidden');
+      updateCartPrices();
+      showCashierMessage(`✅ Выбран: ${cashier.currentClient.name}`, false);
+      switchCashierTab('cash');
+    };
+  });
+}
+
+function updateCardsDisplay() {
+  document.getElementById('discountCard').onclick = () => {
+    navigator.clipboard.writeText(DISCOUNT_CARD_BARCODE);
+    showCashierMessage(`📋 Скопировано!`, false);
+  };
+  document.getElementById('cancelCard').onclick = () => {
+    navigator.clipboard.writeText(CANCEL_CARD_BARCODE);
+    showCashierMessage(`📋 Скопировано!`, false);
+  };
+}
+
+function usePoints() {
+  if (!cashier.currentClient || cashier.currentClient.type === 'plastic') {
+    showCashierMessage("❌ Нет карты!", true); return;
+  }
+  const total = cashier.cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const maxD = Math.floor((cashier.currentClient.balance || 0) / 10);
+  if (maxD <= 0) { showCashierMessage("❌ Недостаточно баллов!", true); return; }
+  cashier.discountAmount = Math.min(total, maxD);
+  updateTotal();
+  showCashierMessage(`✨ Списано ${cashier.discountAmount} ₽`, false);
+}
+
+function removeCard() {
+  cashier.currentClient = null;
+  cashier.discountAmount = 0;
+  document.getElementById('clientPanel').classList.add('hidden');
+  updateCartPrices();
+  showCashierMessage(`❌ Карта удалена`, false);
+}
+
+function updateClientBalance(client, pointsChange) {
+  const i = cashier.clients.findIndex(c => c.id === client.id);
+  if (i !== -1) {
+    cashier.clients[i].balance += pointsChange;
+    if (cashier.currentClient && cashier.currentClient.id === client.id) {
+      cashier.currentClient.balance = cashier.clients[i].balance;
+      document.getElementById('clientPoints').innerHTML = `⭐ ${cashier.currentClient.balance} баллов`;
+    }
+    saveClients(); renderClients();
+  }
+}
+
+// ===== КОРЗИНА =====
+function renderCart() {
+  const tb = document.getElementById('cartBody');
+  if (cashier.cart.length === 0) {
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">Корзина пуста</td></tr>';
+    updateTotal(); return;
+  }
+  let html = '';
+  cashier.cart.forEach((item, i) => {
+    const unit = item.isWeight ? (item.unit || 'кг') : 'шт';
+    html += `<tr>
+      <td>${item.name}</td>
+      <td>${item.price.toFixed(2)} ₽</td>
+      <td>${item.quantity.toFixed(2)} ${unit}</td>
+      <td>${(item.price * item.quantity).toFixed(2)} ₽</td>
+      <td><button class="remove-item" data-index="${i}" style="background:#b13e3e;color:white;padding:4px 12px;">❌</button></td>
+    </tr>`;
+  });
+  tb.innerHTML = html;
+  document.querySelectorAll('.remove-item').forEach(b => {
+    b.onclick = () => {
+      const i = parseInt(b.dataset.index);
+      cashier.cart.splice(i, 1);
+      renderCart();
+      showCashierMessage(`🗑 Удалено`, false);
+    };
+  });
+  updateTotal();
+}
+
+function getCartTotal() { return cashier.cart.reduce((s, i) => s + i.price * i.quantity, 0); }
+
+function updateTotal() {
+  const t = Math.max(0, getCartTotal() - cashier.discountAmount);
+  document.getElementById('totalAmount').innerText = t.toFixed(2);
+}
+
+function addToCart(barcode, qty) {
+  const p = cashier.products.find(x => x.barcode === barcode);
+  if (!p) { showCashierMessage(`❌ Товар не найден!`, true); return false; }
+  const price = cashier.currentClient ? p.discountPrice : p.price;
+  const ex = cashier.cart.find(i => i.barcode === barcode);
+  if (ex) { ex.quantity += qty; showCashierMessage(`➕ ${p.name} +${qty}`, false); }
+  else {
+    cashier.cart.push({ id: cashier.nextId++, barcode, name: p.name, price, quantity: qty, ageRestricted: p.ageRestricted });
+    showCashierMessage(`✅ ${p.name} добавлен`, false);
+  }
+  renderCart(); return true;
+}
+
+function addPackage() {
+  const pkg = cashier.cart.find(i => i.barcode === 'PACKAGE');
+  if (pkg) pkg.quantity++;
+  else cashier.cart.push({ id: cashier.nextId++, barcode: 'PACKAGE', name: 'Пакет', price: 6, quantity: 1 });
+  renderCart();
+  showCashierMessage(`🛍 Пакет добавлен`, false);
+}
+
+function changeLastItem(n) {
+  if (cashier.cart.length === 0) { showCashierMessage("❌ Пусто!", true); return; }
+  const last = cashier.cart[cashier.cart.length - 1];
+  last.quantity = n;
+  renderCart();
+  showCashierMessage(`✏️ Изменено`, false);
+}
+
+function clearCart() {
+  cashier.cart = [];
+  cashier.discountAmount = 0;
+  renderCart();
+  showCashierMessage("🗑 Очищено", false);
+}
+
+function handleCommand(input) {
+  if (input === '/') { addPackage(); return true; }
+  if (input.startsWith('*')) {
+    const n = parseInt(input.substring(1));
+    if (!isNaN(n) && n > 0) { changeLastItem(n); return true; }
+  }
+  return false;
+}
+
+function processScan(barcode, qty) {
+  if (barcode === CANCEL_CARD_BARCODE) { openCancelModal(); return; }
+  if (barcode === DISCOUNT_CARD_BARCODE) { loadClientByBarcode(barcode); return; }
+  if (barcode.startsWith('29') && barcode.length === 12) {
+    if (!loadClientByBarcode(barcode)) showCashierMessage("❌ Карта не найдена!", true);
+    return;
+  }
+  addToCart(barcode, qty);
+}
+
+// ===== ОТМЕНА =====
+function openCancelModal() {
+  if (cashier.cart.length === 0) { showCashierMessage("❌ Пусто!", true); return; }
+  const s = document.getElementById('cancelProductSelect');
+  s.innerHTML = '';
+  cashier.cart.forEach((item, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    const u = item.isWeight ? (item.unit || 'кг') : 'шт';
+    o.textContent = `${item.name} - ${item.quantity.toFixed(2)} ${u} по ${item.price.toFixed(2)} ₽`;
+    s.appendChild(o);
+  });
+  updateCancelAmount();
+  document.getElementById('cancelModal').style.display = 'flex';
+}
+
+function updateCancelAmount() {
+  const s = document.getElementById('cancelProductSelect');
+  const q = parseFloat(document.getElementById('cancelQuantity').value) || 1;
+  const i = parseInt(s.value);
+  if (!isNaN(i) && cashier.cart[i]) {
+    const item = cashier.cart[i];
+    const cq = Math.min(q, item.quantity);
+    document.getElementById('cancelAmount').value = `${(item.price * cq).toFixed(2)} ₽`;
+    document.getElementById('cancelQuantity').max = item.quantity;
+  }
+}
+
+function confirmCancel() {
+  const s = document.getElementById('cancelProductSelect');
+  const q = parseFloat(document.getElementById('cancelQuantity').value) || 1;
+  const i = parseInt(s.value);
+  if (isNaN(i) || !cashier.cart[i]) { showCashierMessage("❌ Выберите товар!", true); return; }
+  const item = cashier.cart[i];
+  const cq = Math.min(q, item.quantity);
+  if (cq >= item.quantity) { cashier.cart.splice(i, 1); showCashierMessage(`🔄 Отменён "${item.name}"`, false); }
+  else { item.quantity -= cq; showCashierMessage(`🔄 Отменено ${cq} "${item.name}"`, false); }
+  renderCart();
+  document.getElementById('cancelModal').style.display = 'none';
+}
+
+function closeCancelModal() { document.getElementById('cancelModal').style.display = 'none'; }
+
+// ===== ТЕРМИНАЛ НА КАССЕ =====
+function updateTerminalStatusUI() {
+  const bar = document.getElementById('terminalStatusBar');
+  const text = document.getElementById('terminalStatusText');
+  bar.className = 'terminal-status';
+  if (!cashier.terminalId) {
+    bar.classList.add('waiting');
+    text.textContent = 'Терминал не настроен — нажмите «Настроить»';
+  } else if (cashier.terminalStatus === 'connected') {
+    bar.classList.add('connected');
+    text.textContent = `Терминал ${cashier.terminalId} подключён ✅`;
+  } else if (cashier.terminalStatus === 'busy') {
+    bar.classList.add('error');
+    text.textContent = `Терминал ${cashier.terminalId} занят`;
+  } else {
+    bar.classList.add('waiting');
+    text.textContent = `Терминал ${cashier.terminalId} — ожидание связи...`;
+  }
+}
+
+function saveTerminalId(id) {
+  cashier.terminalId = id;
+  localStorage.setItem('pos_terminal_id', id);
+  updateTerminalStatusUI();
+}
+
+function forgetTerminalId() {
+  cashier.terminalId = '';
+  localStorage.removeItem('pos_terminal_id');
+  if (cashier.terminalUnsubscribe) { cashier.terminalUnsubscribe(); cashier.terminalUnsubscribe = null; }
+  cashier.terminalStatus = 'disconnected';
+  cashier.currentTerminalData = null;
+  updateTerminalStatusUI();
+  document.getElementById('terminalIdInput').value = '';
+  showCashierMessage('🗑 Терминал забыт', false);
+}
+
+function subscribeTerminalFromCashier() {
+  if (!cashier.terminalId) return;
+  if (cashier.terminalUnsubscribe) cashier.terminalUnsubscribe();
+  cashier.terminalUnsubscribe = onValue(ref(db, `${TERMINALS_PATH}/${cashier.terminalId}`), (snap) => {
+    const data = snap.val();
+    cashier.currentTerminalData = data;
+    if (!data) cashier.terminalStatus = 'disconnected';
+    else if (data.status === 'waiting_connection') cashier.terminalStatus = 'connected';
+    else if (['pending_connection','connected','waiting_pin'].includes(data.status)) cashier.terminalStatus = 'busy';
+    else cashier.terminalStatus = 'connected';
+    updateTerminalStatusUI();
+    if (cashier.waitModal.open) updateCashierWaitModal(data);
+  }, (err) => console.error('Term sub err:', err));
+}
+
+// ===== МОДАЛКА ОЖИДАНИЯ ТЕРМИНАЛА =====
+function openCashierWaitModal(amount, needsPin) {
+  cashier.waitModal.open = true;
+  document.getElementById('terminalWaitModal').style.display = 'flex';
+  document.getElementById('terminalWaitTitle').textContent = '📟 Связь с терминалом';
+  document.getElementById('terminalWaitText').textContent = `Сумма: ${amount.toFixed(2)} ₽ — ожидание ответа...`;
+  document.getElementById('pinPadContainer').classList.add('hidden');
+  document.getElementById('pinDisplay').innerHTML = '';
+}
+
+function closeCashierWaitModal(success) {
+  cashier.waitModal.open = false;
+  document.getElementById('terminalWaitModal').style.display = 'none';
+  if (cashier.waitModal.resolve) {
+    const r = cashier.waitModal.resolve;
+    cashier.waitModal.resolve = null;
+    r(success);
+  }
+}
+
+function updateCashierWaitModal(data) {
+  if (!cashier.waitModal.open) return;
+  if (data.status === 'waiting_pin') {
+    document.getElementById('terminalWaitText').textContent =
+      `Сумма: ${data.amount.toFixed(2)} ₽ — клиент вводит PIN...`;
+  } else if (data.status === 'success') {
+    document.getElementById('terminalWaitText').textContent = `✅ Оплата ${(data.amount||0).toFixed(2)} ₽ успешна!`;
+    setTimeout(() => closeCashierWaitModal(true), 1200);
+  } else if (data.status === 'fail') {
+    document.getElementById('terminalWaitText').textContent = `❌ Отказ. ${data.failReason === 'wrong_pin' ? 'Неверный PIN' : 'Отклонено'}`;
+    setTimeout(() => closeCashierWaitModal(false), 1500);
+  }
+}
+
+// ===== ОПЛАТА =====
+async function completePayment(method, cashGiven = null) {
+  const total = getCartTotal();
+  const finalTotal = Math.max(0, total - cashier.discountAmount);
+  if (cashier.cart.length === 0) { showCashierMessage("❌ Пусто!", true); return false; }
+
+  if (method === 'cash') {
+    if (!cashGiven || cashGiven < finalTotal) { showCashierMessage("❌ Недостаточно!", true); return false; }
+    const change = cashGiven - finalTotal;
+    showCashierMessage(`💰 Оплачено: ${finalTotal} ₽, сдача: ${change.toFixed(2)} ₽`, false);
+    const pe = Math.floor(finalTotal / 10);
+    if (cashier.currentClient && cashier.currentClient.type === 'electronic') {
+      updateClientBalance(cashier.currentClient, pe - (cashier.discountAmount * 10));
+      showCashierMessage(`🎉 +${pe} баллов!`, false);
+    }
+    cashier.cart = []; cashier.discountAmount = 0; cashier.currentClient = null;
+    document.getElementById('clientPanel').classList.add('hidden');
+    renderCart();
+    document.getElementById('paymentStatus').innerHTML = `✅ ОПЛАЧЕНО: ${finalTotal.toFixed(2)} ₽`;
+    setTimeout(() => document.getElementById('paymentStatus').innerHTML = 'ГОТОВ', 3000);
+    return true;
+  }
+
+  // КАРТА
+  if (!cashier.terminalId) { showCashierMessage('❌ Терминал не настроен!', true); return false; }
+  if (!cashier.currentTerminalData) { showCashierMessage('❌ Терминал не найден', true); return false; }
+  if (cashier.currentTerminalData.status !== 'waiting_connection') {
+    showCashierMessage('❌ Терминал занят. Попробуйте позже.', true); return false;
+  }
+
+  const needsPin = finalTotal > PIN_REQUIRED_FROM;
+  return new Promise((resolve) => {
+    cashier.waitModal.resolve = resolve;
+    openCashierWaitModal(finalTotal, needsPin);
+    update(ref(db, `${TERMINALS_PATH}/${cashier.terminalId}`), {
+      status: 'waiting_pin', amount: finalTotal, _lastAmount: finalTotal,
+      needsPin: needsPin, updatedAt: Date.now()
+    }).catch(err => {
+      document.getElementById('terminalWaitText').textContent = '❌ Ошибка: ' + err.message;
+      setTimeout(() => closeCashierWaitModal(false), 2000);
+    });
+  }).then((success) => {
+    if (success) {
+      const pe = Math.floor(finalTotal / 10);
+      if (cashier.currentClient && cashier.currentClient.type === 'electronic') {
+        updateClientBalance(cashier.currentClient, pe - (cashier.discountAmount * 10));
+        showCashierMessage(`🎉 +${pe} баллов!`, false);
+      }
+      cashier.cart = []; cashier.discountAmount = 0; cashier.currentClient = null;
+      document.getElementById('clientPanel').classList.add('hidden');
+      renderCart();
+      document.getElementById('paymentStatus').innerHTML = `✅ ОПЛАЧЕНО (карта): ${finalTotal.toFixed(2)} ₽`;
+      setTimeout(() => document.getElementById('paymentStatus').innerHTML = 'ГОТОВ', 3000);
+    } else {
+      showCashierMessage('❌ Оплата картой отклонена', true);
+    }
+    return success;
+  });
+}
+
+// ===== ВКЛАДКИ КАССЫ =====
+function switchCashierTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+// ===== СОБЫТИЯ КАССЫ =====
+function bindCashierEvents() {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.onclick = () => switchCashierTab(b.dataset.tab);
+  });
+
+  const bi = document.getElementById('barcodeInput');
+  const qi = document.getElementById('quantityInput');
+  bi.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const v = bi.value.trim();
+      if (!v) return;
+      if (handleCommand(v)) { bi.value = ''; return; }
+      const q = parseInt(qi.value) || 1;
+      processScan(v, q);
+      bi.value = '';
+    }
+  });
+  document.getElementById('addBtn').onclick = () => {
+    const v = bi.value.trim();
+    if (!v) { showCashierMessage("Введите штрихкод!", true); return; }
+    if (handleCommand(v)) { bi.value = ''; return; }
+    const q = parseInt(qi.value) || 1;
+    processScan(v, q);
+    bi.value = '';
+  };
+  document.getElementById('clearCartBtn').onclick = clearCart;
+  document.getElementById('usePointsBtn').onclick = usePoints;
+  document.getElementById('removeCardBtn').onclick = removeCard;
+  document.getElementById('addWeightBtn').onclick = addWeightItem;
+  document.getElementById('closeWeightBtn').onclick = () => {
+    document.getElementById('weightMenu').style.display = 'none';
+  };
+
+  document.getElementById('registerCardBtn').onclick = () => {
+    registerClient(document.getElementById('regName').value.trim(), document.getElementById('regPhone').value.trim());
+    document.getElementById('regName').value = '';
+    document.getElementById('regPhone').value = '';
+  };
+  document.getElementById('searchCardBtn').onclick = () => {
+    const p = document.getElementById('searchPhone').value.trim();
+    if (!p) { showCashierMessage("Введите телефон!", true); return; }
+    const c = searchClientByPhone(p);
+    const r = document.getElementById('searchResult');
+    if (c) { r.innerHTML = `✅ ${c.name}<br>🎫 ${c.barcode}<br>⭐ ${c.balance} баллов`; r.classList.remove('hidden'); }
+    else { r.innerHTML = '❌ Не найден'; r.classList.remove('hidden'); }
+  };
+  document.getElementById('addProductBtn').onclick = () => {
+    addProduct(
+      document.getElementById('newBarcode').value.trim(),
+      document.getElementById('newName').value.trim(),
+      document.getElementById('newPrice').value,
+      document.getElementById('newDiscount').value,
+      document.getElementById('newAgeRestricted').value
+    );
+    document.getElementById('newBarcode').value = '';
+    document.getElementById('newName').value = '';
+    document.getElementById('newPrice').value = '';
+    document.getElementById('newDiscount').value = '';
+  };
+
+  // Модалка отмены
+  document.getElementById('cancelProductSelect').onchange = updateCancelAmount;
+  document.getElementById('cancelQuantity').oninput = updateCancelAmount;
+  document.getElementById('confirmCancelBtn').onclick = confirmCancel;
+  document.getElementById('closeCancelModalBtn').onclick = closeCancelModal;
+  window.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('cancelModal')) closeCancelModal();
+    if (e.target === document.getElementById('paymentModal')) closePaymentModal();
+  });
+
+  // Модалка оплаты
+  const modal = document.getElementById('paymentModal');
+  document.getElementById('paymentBtn').onclick = () => {
+    if (cashier.cart.length === 0) { showCashierMessage("❌ Пусто!", true); return; }
+    cashier.selectedMethod = null;
+    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+    document.getElementById('cashArea').classList.add('hidden');
+    document.getElementById('cardArea').classList.add('hidden');
+    modal.style.display = 'flex';
+  };
+  document.querySelectorAll('.payment-method').forEach(m => {
+    m.onclick = () => {
+      document.querySelectorAll('.payment-method').forEach(mm => mm.classList.remove('selected'));
+      m.classList.add('selected');
+      cashier.selectedMethod = m.dataset.method;
+      document.getElementById('cashArea').classList.toggle('hidden', cashier.selectedMethod !== 'cash');
+      document.getElementById('cardArea').classList.toggle('hidden', cashier.selectedMethod !== 'card');
+      if (cashier.selectedMethod === 'cash') document.getElementById('cashGiven').focus();
+    };
+  });
+  document.getElementById('cashGiven').oninput = () => {
+    const total = getCartTotal() - cashier.discountAmount;
+    const given = parseFloat(document.getElementById('cashGiven').value);
+    if (!isNaN(given) && given >= total) {
+      document.getElementById('changeAmount').innerText = (given - total).toFixed(2) + ' ₽';
+      document.getElementById('changeArea').classList.remove('hidden');
+    } else {
+      document.getElementById('changeArea').classList.add('hidden');
+    }
+  };
+  document.getElementById('confirmPaymentBtn').onclick = async () => {
+    if (!cashier.selectedMethod) { showCashierMessage("❌ Выберите!", true); return; }
+    let cash = null;
+    if (cashier.selectedMethod === 'cash') {
+      cash = parseFloat(document.getElementById('cashGiven').value);
+      if (isNaN(cash)) { showCashierMessage("❌ Введите сумму!", true); return; }
+    }
+    closePaymentModal();
+    document.getElementById('cashGiven').value = '';
+    await completePayment(cashier.selectedMethod, cash);
+  };
+  document.getElementById('closeModalBtn').onclick = closePaymentModal;
+
+  // Терминал: настройка
+  document.getElementById('terminalConnectBtn').onclick = () => {
+    switchCashierTab('terminal');
+    document.getElementById('terminalIdInput').value = cashier.terminalId;
+  };
+  document.getElementById('terminalSaveBtn').onclick = async () => {
+    const id = document.getElementById('terminalIdInput').value.trim();
+    if (id.length !== 4) { alert('Введите 4-значный ID'); return; }
+    try {
+      const snap = await get(ref(db, `${TERMINALS_PATH}/${id}`));
+      if (!snap.exists()) { alert('Терминал не найден. Сначала создайте на телефоне.'); return; }
+      saveTerminalId(id);
+      subscribeTerminalFromCashier();
+      showCashierMessage(`✅ Терминал ${id} сохранён`, false);
+      switchCashierTab('cash');
+    } catch (err) { alert('Ошибка: ' + err.message); }
+  };
+  document.getElementById('terminalForgetBtn').onclick = () => {
+    if (confirm('Забыть терминал?')) {
+      forgetTerminalId();
+      showCashierMessage('🗑 Терминал забыт', false);
+    }
+  };
+
+  // Модалка ожидания терминала
+  document.getElementById('cancelTerminalBtn').onclick = () => closeCashierWaitModal(false);
+  document.getElementById('submitPinBtn').onclick = () => {}; // PIN на терминале
+
+  // Клавиатура для весовых (только если не в input)
+  document.addEventListener('keydown', (e) => {
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+    if (document.getElementById('terminalWaitModal').style.display === 'flex') return;
+    if (document.getElementById('paymentModal').style.display === 'flex') return;
+
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      cashier.currentCategoryIndex = (cashier.currentCategoryIndex + 1) % categories.length;
+      cashier.currentItemIndex = 0;
+      renderWeightMenu();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      cashier.currentCategoryIndex = (cashier.currentCategoryIndex - 1 + categories.length) % categories.length;
+      cashier.currentItemIndex = 0;
+      renderWeightMenu();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const items = weightData[categories[cashier.currentCategoryIndex]] || [];
+      cashier.currentItemIndex = (cashier.currentItemIndex + 1) % items.length;
+      renderWeightMenu();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const items = weightData[categories[cashier.currentCategoryIndex]] || [];
+      cashier.currentItemIndex = (cashier.currentItemIndex - 1 + items.length) % items.length;
+      renderWeightMenu();
+    } else if (e.key === 'Enter') {
+      const items = weightData[categories[cashier.currentCategoryIndex]] || [];
+      if (items[cashier.currentItemIndex]) { e.preventDefault(); addWeightItem(); }
+    }
+  });
+
+  // Таймаут ожидания терминала
+  setInterval(() => {
+    if (cashier.waitModal.open && cashier.currentTerminalData) {
+      const age = Date.now() - (cashier.currentTerminalData.updatedAt || 0);
+      if (age > 120000) {
+        document.getElementById('terminalWaitText').textContent = '⌛ Время истекло';
+        setTimeout(() => closeCashierWaitModal(false), 1000);
+      }
+    }
+  }, 5000);
+}
+
+// ==================== ЭКСПОРТ ФУНКЦИЙ ====================
 window.terminalCreate = terminalCreate;
 window.terminalConfirm = terminalConfirm;
 window.terminalNewOperation = terminalNewOperation;
@@ -668,22 +1725,16 @@ window.terminalNewId = terminalNewId;
 window.terminalSubmitPin = terminalSubmitPin;
 window.terminalCancelPayment = terminalCancelPayment;
 
-// Ограничение ввода ID
-document.getElementById('cashierIdInput').addEventListener('input', (e) => {
+// Ограничение ID
+document.getElementById('cashierIdInput')?.addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+});
+document.getElementById('terminalIdInput')?.addEventListener('input', (e) => {
   e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
 });
 
 // ==================== СТАРТ ====================
 initByDevice();
-
-// Пересчёт при изменении размера окна (если открыли на планшете)
-window.addEventListener('resize', () => {
-  const nowPhone = isPhone();
-  if (nowPhone !== IS_PHONE) {
-    // Просто предупредим, что лучше перезагрузить
-    // (полноценное переключение без reload не имеет смысла)
-  }
-});
 </script>
 </body>
 </html>
