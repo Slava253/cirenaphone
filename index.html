@@ -6,92 +6,25 @@
 <title>Касса и Терминал</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f1f5f9;
-    color: #1e293b;
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.5;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; font-size: 15px; line-height: 1.5; }
   .hidden { display: none !important; }
-
-  /* ============ ТЕРМИНАЛ (телефон) ============ */
-  #terminalApp {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 16px;
-  }
-  .term-box {
-    width: 100%;
-    max-width: 460px;
-    background: #fff;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-  }
+  #terminalApp { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 16px; }
+  .term-box { width: 100%; max-width: 460px; background: #fff; border-radius: 20px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
   .term-box h1 { font-size: 22px; text-align: center; margin-bottom: 4px; }
   .term-box .sub { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 20px; }
-  .btn {
-    padding: 14px;
-    border: none;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-family: inherit;
-    width: 100%;
-    margin-bottom: 8px;
-  }
+  .btn { padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; width: 100%; margin-bottom: 8px; }
   .btn:active { transform: scale(0.97); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-primary { background: #6366f1; color: #fff; }
   .btn-success { background: #10b981; color: #fff; }
   .btn-danger { background: #ef4444; color: #fff; }
   .btn-ghost { background: #f1f5f9; color: #64748b; }
-  .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 16px;
-  }
+  .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
   .status-pill.wait { background: #fef3c7; color: #b45309; }
   .status-pill.ok { background: #dcfce7; color: #15803d; }
   .status-pill.err { background: #fee2e2; color: #b91c1c; }
-  .id-big {
-    text-align: center;
-    font-size: 42px;
-    font-weight: 900;
-    letter-spacing: 8px;
-    font-family: 'Courier New', monospace;
-    background: #eef2ff;
-    color: #4f46e5;
-    padding: 20px;
-    border-radius: 14px;
-    border: 2px dashed #818cf8;
-    margin-bottom: 16px;
-  }
-  .screen {
-    background: #0d1b2a;
-    color: #7CFC00;
-    font-family: 'Courier New', monospace;
-    padding: 24px;
-    border-radius: 14px;
-    text-align: center;
-    margin-bottom: 16px;
-    min-height: 120px;
-  }
+  .id-big { text-align: center; font-size: 42px; font-weight: 900; letter-spacing: 8px; font-family: 'Courier New', monospace; background: #eef2ff; color: #4f46e5; padding: 20px; border-radius: 14px; border: 2px dashed #818cf8; margin-bottom: 16px; }
+  .screen { background: #0d1b2a; color: #7CFC00; font-family: 'Courier New', monospace; padding: 24px; border-radius: 14px; text-align: center; margin-bottom: 16px; min-height: 120px; }
   .screen .label { color: #4da6ff; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
   .screen .val { font-size: 32px; color: #FFD700; font-weight: 900; }
   .screen .msg { font-size: 16px; margin-top: 8px; }
@@ -99,198 +32,52 @@
   .pin-row .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #6366f1; transition: 0.2s; }
   .pin-row .dot.on { background: #6366f1; box-shadow: 0 0 10px #6366f1; }
   .pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-  .pin-grid button {
-    padding: 16px;
-    border: none;
-    border-radius: 10px;
-    background: #f1f5f9;
-    font-size: 22px;
-    font-weight: 800;
-    cursor: pointer;
-    font-family: 'Courier New', monospace;
-  }
+  .pin-grid button { padding: 16px; border: none; border-radius: 10px; background: #f1f5f9; font-size: 22px; font-weight: 800; cursor: pointer; font-family: 'Courier New', monospace; }
   .pin-grid button:active { background: #e2e8f0; }
   .result-icon { font-size: 64px; text-align: center; margin-bottom: 12px; }
 
-  /* ============ КАССА (ПК) ============ */
-  #cashierApp {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 16px;
-  }
-  .cashier-header {
-    background: #1e293b;
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+  #cashierApp { max-width: 1200px; margin: 0 auto; padding: 16px; }
+  .cashier-header { background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   .cashier-header h1 { font-size: 20px; }
   .cashier-header .info { font-size: 12px; opacity: 0.8; }
-  .terminal-bar {
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-  }
+  .terminal-bar { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
   .terminal-bar.wait { background: #fef3c7; color: #92400e; }
   .terminal-bar.ok { background: #dcfce7; color: #15803d; }
   .terminal-bar.err { background: #fee2e2; color: #b91c1c; }
-  .cashier-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .cashier-tab {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 10px;
-    background: #fff;
-    color: #64748b;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  }
+  .cashier-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .cashier-tab { padding: 10px 18px; border: none; border-radius: 10px; background: #fff; color: #64748b; font-weight: 700; cursor: pointer; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .cashier-tab.active { background: #6366f1; color: #fff; }
-  .cashier-panel {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-  }
-  .cashier-panel h3 {
-    font-size: 17px;
-    margin-bottom: 12px;
-    color: #1e293b;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 8px;
-  }
+  .cashier-panel { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+  .cashier-panel h3 { font-size: 17px; margin-bottom: 12px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
   .row > * { flex: 1; min-width: 120px; }
   .row .flex-2 { flex: 2; }
-  input, select {
-    padding: 10px 14px;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 15px;
-    font-family: inherit;
-    outline: none;
-    background: #fff;
-    color: #1e293b;
-    width: 100%;
-  }
+  input, select { padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; background: #fff; color: #1e293b; width: 100%; }
   input:focus, select:focus { border-color: #6366f1; }
-  .cashier-btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-  }
+  .cashier-btn { padding: 10px 18px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
   .cashier-btn.primary { background: #6366f1; color: #fff; }
   .cashier-btn.success { background: #10b981; color: #fff; }
   .cashier-btn.danger { background: #ef4444; color: #fff; }
   .cashier-btn.ghost { background: #f1f5f9; color: #64748b; }
   .cashier-btn:active { transform: scale(0.97); }
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th {
-    background: #f1f5f9;
-    padding: 10px;
-    text-align: left;
-    color: #475569;
-    font-weight: 700;
-    border-bottom: 2px solid #e2e8f0;
-  }
+  th { background: #f1f5f9; padding: 10px; text-align: left; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
   td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
-  .product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 10px;
-    max-height: 300px;
-    overflow-y: auto;
-    margin-bottom: 12px;
-  }
-  .product-card {
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.15s;
-    border: 2px solid transparent;
-  }
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 12px; }
+  .product-card { padding: 12px; background: #f8fafc; border-radius: 10px; cursor: pointer; transition: 0.15s; border: 2px solid transparent; }
   .product-card:hover { border-color: #6366f1; background: #eef2ff; }
   .product-card .name { font-weight: 700; margin-bottom: 4px; }
   .product-card .price { color: #10b981; font-weight: 700; font-family: 'Courier New', monospace; }
   .product-card .barcode { font-size: 11px; color: #94a3b8; font-family: monospace; }
-  .total-box {
-    text-align: right;
-    font-size: 24px;
-    font-weight: 900;
-    color: #6366f1;
-    margin-top: 12px;
-  }
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    padding: 20px;
-  }
+  .total-box { text-align: right; font-size: 24px; font-weight: 900; color: #6366f1; margin-top: 12px; }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 999; padding: 20px; }
   .modal.show { display: flex; }
-  .modal-box {
-    background: #fff;
-    border-radius: 16px;
-    padding: 24px;
-    max-width: 400px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
+  .modal-box { background: #fff; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; }
   .modal-box h3 { font-size: 18px; margin-bottom: 16px; text-align: center; }
   .modal-box .method-row { display: flex; gap: 10px; margin-bottom: 16px; }
-  .modal-box .method {
-    flex: 1;
-    padding: 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    cursor: pointer;
-    text-align: center;
-    font-weight: 700;
-    background: #fff;
-  }
+  .modal-box .method { flex: 1; padding: 16px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; text-align: center; font-weight: 700; background: #fff; }
   .modal-box .method.active { border-color: #6366f1; background: #eef2ff; color: #4f46e5; }
-  .toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e293b;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-    z-index: 10000;
-    opacity: 0;
-    transition: 0.3s;
-    pointer-events: none;
-    max-width: 90vw;
-    text-align: center;
-  }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; z-index: 10000; opacity: 0; transition: 0.3s; pointer-events: none; max-width: 90vw; text-align: center; }
   .toast.show { opacity: 1; }
 </style>
 </head>
@@ -307,9 +94,9 @@
       <button class="btn btn-primary" onclick="termCreate()">✨ Создать терминал</button>
     </div>
 
-    <!-- Шаг 2: ждём кассу -->
+    <!-- Шаг 2: ждём кассу (ID показывается только здесь) -->
     <div id="tStep2" class="hidden">
-      <div class="status-pill wait" id="tStatus2">⏳ Ожидание кассы</div>
+      <div class="status-pill wait">⏳ Ожидание кассы</div>
       <div class="id-big" id="tIdDisplay">----</div>
       <div style="font-size:12px;color:#64748b;text-align:center;margin-bottom:12px;">Сообщите этот ID кассиру</div>
       <button class="btn btn-ghost" onclick="termNewId()">🔄 Создать новый ID</button>
@@ -318,31 +105,22 @@
     <!-- Шаг 3: касса подключается -->
     <div id="tStep3" class="hidden">
       <div class="status-pill wait">⏳ Касса подключается...</div>
-      <div class="screen">
-        <div class="label">Запрос</div>
-        <div class="msg">Касса хочет подключиться</div>
-      </div>
+      <div class="screen"><div class="label">Запрос</div><div class="msg">Касса хочет подключиться</div></div>
       <button class="btn btn-success" onclick="termConfirm()" id="tConfirmBtn">✅ Подтвердить подключение</button>
       <button class="btn btn-ghost" onclick="termNewOperation()">❌ Отмена</button>
     </div>
 
-    <!-- Шаг 4: подключено, ждём сумму -->
+    <!-- Шаг 4: подключено, ждём сумму (ID больше не показываем) -->
     <div id="tStep4" class="hidden">
       <div class="status-pill ok">✅ Касса подключена</div>
-      <div class="screen">
-        <div class="label">Готов к оплате</div>
-        <div class="msg">Ожидание суммы от кассира...</div>
-      </div>
+      <div class="screen"><div class="label">Готов к оплате</div><div class="msg">Ожидание суммы от кассира...</div></div>
       <button class="btn btn-ghost" onclick="termNewOperation()">❌ Отмена</button>
     </div>
 
     <!-- Шаг 5: ввод PIN -->
     <div id="tStep5" class="hidden">
       <div class="status-pill ok">✅ Касса подключена</div>
-      <div class="screen">
-        <div class="label">К оплате</div>
-        <div class="val" id="tAmount">0.00 ₽</div>
-      </div>
+      <div class="screen"><div class="label">К оплате</div><div class="val" id="tAmount">0.00 ₽</div></div>
       <div class="pin-row" id="tPinDots">
         <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
       </div>
@@ -353,10 +131,7 @@
 
     <!-- Шаг 6: обработка -->
     <div id="tStep6" class="hidden">
-      <div class="screen">
-        <div class="label">Обработка</div>
-        <div class="msg">Связь с банком...</div>
-      </div>
+      <div class="screen"><div class="label">Обработка</div><div class="msg">Связь с банком...</div></div>
     </div>
 
     <!-- Шаг 7: результат -->
@@ -370,10 +145,7 @@
 <!-- ================= КАССА ================= -->
 <div id="cashierApp" class="hidden">
   <div class="cashier-header">
-    <div>
-      <h1>💼 Касса</h1>
-      <div class="info" id="cashierInfo">—</div>
-    </div>
+    <div><h1>💼 Касса</h1><div class="info" id="cashierInfo">—</div></div>
     <div class="terminal-bar wait" id="termBar">📟 Терминал не настроен</div>
   </div>
 
@@ -433,9 +205,7 @@
   <div id="tab-terminal" class="hidden">
     <div class="cashier-panel">
       <h3>📟 Настройка терминала</h3>
-      <p style="font-size:13px;color:#64748b;margin-bottom:12px;">
-        Введите ID терминала (4 цифры) — он запомнится. Не нужно вводить каждый раз.
-      </p>
+      <p style="font-size:13px;color:#64748b;margin-bottom:12px;">Введите ID терминала (4 цифры) — он запомнится.</p>
       <div class="row">
         <input type="text" id="termIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
         <button class="cashier-btn success" onclick="saveTerminalId()">💾 Сохранить</button>
@@ -450,17 +220,11 @@
   <div class="modal-box">
     <h3 id="payTitle">Оплата</h3>
     <div id="payCashBlock" class="hidden">
-      <div class="row">
-        <input type="number" id="cashGiven" placeholder="Сумма от покупателя" step="0.01" oninput="calcChange()">
-      </div>
-      <div style="text-align:center;font-size:16px;margin-bottom:16px;">
-        Сдача: <b id="changeVal" style="color:#10b981;">—</b>
-      </div>
+      <div class="row"><input type="number" id="cashGiven" placeholder="Сумма от покупателя" step="0.01" oninput="calcChange()"></div>
+      <div style="text-align:center;font-size:16px;margin-bottom:16px;">Сдача: <b id="changeVal" style="color:#10b981;">—</b></div>
     </div>
     <div id="payCardBlock" class="hidden">
-      <p style="text-align:center;color:#64748b;margin-bottom:16px;">
-        Сумма уйдёт на терминал.<br>Клиент введёт PIN (если сумма &gt; 1000 ₽).
-      </p>
+      <p style="text-align:center;color:#64748b;margin-bottom:16px;">Сумма уйдёт на терминал.</p>
     </div>
     <div id="payWaitBlock" class="hidden" style="text-align:center;padding:20px 0;">
       <div style="font-size:14px;color:#64748b;margin-bottom:12px;" id="payWaitText">Ожидание терминала...</div>
@@ -495,16 +259,15 @@ const TERM_PATH = 'terminals';
 
 // ==================== ОПРЕДЕЛЕНИЕ УСТРОЙСТВА ====================
 const params = new URLSearchParams(location.search);
-const forceRole = params.get('role'); // 'cashier' | 'terminal'
+const forceRole = params.get('role');
 const ua = navigator.userAgent.toLowerCase();
 const isMobileUA = /android|iphone|ipad|ipod|mobile|opera mini/.test(ua);
 const isSmallScreen = window.innerWidth <= 820;
 const autoRole = (isMobileUA || isSmallScreen) ? 'terminal' : 'cashier';
 const ROLE = forceRole || autoRole;
+console.log('[ROLE]', ROLE);
 
-console.log('[ROLE]', ROLE, '(forced:', forceRole, ', mobile:', isMobileUA, ', small:', isSmallScreen, ')');
-
-// ==================== ОБЩИЕ ФУНКЦИИ ====================
+// ==================== ОБЩИЕ ====================
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -516,6 +279,8 @@ function showToast(msg) {
 function genId() {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
+
+const PIN_THRESHOLD = 1000; // PIN нужен только если сумма БОЛЬШЕ этого
 
 // ==================== ТЕРМИНАЛ ====================
 const termState = {
@@ -577,7 +342,7 @@ function termUpdateUI(data) {
     showTermStep(3);
     document.getElementById('tConfirmBtn').disabled = false;
   } else if (s === 'connected') {
-    showTermStep(4);
+    showTermStep(4); // Ждём сумму, ID больше не показываем
   } else if (s === 'waiting_pin') {
     const wasHidden = document.getElementById('tStep5').classList.contains('hidden');
     showTermStep(5);
@@ -620,12 +385,16 @@ window.termNewOperation = async function() {
   termState.pin = '';
   if (!termState.myId) { showTermStep(1); return; }
   try {
+    // Не удаляем терминал, не создаём новый ID. Просто возвращаем в "готов к работе"
     await update(ref(db, `${TERM_PATH}/${termState.myId}`), {
       status: 'waiting',
       amount: 0,
       updatedAt: Date.now()
     });
     showToast('Готов к новой операции');
+    // Переходим сразу в режим ожидания суммы (step 2 = ожидание кассы)
+    // Если касса всё ещё подключена, она увидит 'waiting' и можно слать новую сумму
+    showTermStep(2);
   } catch (e) {
     showToast('Ошибка: ' + e.message);
   }
@@ -701,16 +470,13 @@ const cashState = {
   termData: null,
   unsubscribe: null,
   payMethod: null,
-  payResolve: null,
 };
 
-// ==================== ТОВАРЫ ====================
 function loadProducts() {
   try {
     const saved = JSON.parse(localStorage.getItem('products_v6'));
-    if (saved && saved.length) {
-      cashState.products = saved;
-    } else {
+    if (saved && saved.length) cashState.products = saved;
+    else {
       cashState.products = [
         { barcode: '4600001', name: 'Молоко', price: 89.90 },
         { barcode: '4600002', name: 'Хлеб', price: 54.50 },
@@ -719,27 +485,17 @@ function loadProducts() {
       ];
       saveProducts();
     }
-  } catch (e) {
-    cashState.products = [];
-  }
+  } catch (e) { cashState.products = []; }
 }
 
-function saveProducts() {
-  localStorage.setItem('products_v6', JSON.stringify(cashState.products));
-}
+function saveProducts() { localStorage.setItem('products_v6', JSON.stringify(cashState.products)); }
 
 window.addProduct = function() {
   const barcode = document.getElementById('newBarcode').value.trim();
   const name = document.getElementById('newName').value.trim();
   const price = parseFloat(document.getElementById('newPrice').value);
-  if (!barcode || !name || isNaN(price) || price <= 0) {
-    showToast('Заполните все поля');
-    return;
-  }
-  if (cashState.products.find(p => p.barcode === barcode)) {
-    showToast('Штрихкод уже есть');
-    return;
-  }
+  if (!barcode || !name || isNaN(price) || price <= 0) { showToast('Заполните все поля'); return; }
+  if (cashState.products.find(p => p.barcode === barcode)) { showToast('Штрихкод уже есть'); return; }
   cashState.products.push({ barcode, name, price });
   saveProducts();
   renderProducts();
@@ -758,10 +514,7 @@ window.deleteProduct = function(barcode) {
 
 function renderProducts() {
   const grid = document.getElementById('productsList');
-  if (!cashState.products.length) {
-    grid.innerHTML = '<div style="color:#94a3b8;padding:20px;">Товаров нет</div>';
-    return;
-  }
+  if (!cashState.products.length) { grid.innerHTML = '<div style="color:#94a3b8;padding:20px;">Товаров нет</div>'; return; }
   grid.innerHTML = cashState.products.map(p => `
     <div class="product-card">
       <div class="name">${p.name}</div>
@@ -772,26 +525,15 @@ function renderProducts() {
   `).join('');
 }
 
-// ==================== КОРЗИНА ====================
 window.addByBarcode = function() {
   const q = document.getElementById('barcodeInput').value.trim();
   if (!q) return;
   const qty = parseInt(document.getElementById('qtyInput').value) || 1;
-
-  // Ищем по штрихкоду или названию
-  const product = cashState.products.find(p =>
-    p.barcode === q || p.name.toLowerCase().includes(q.toLowerCase())
-  );
-  if (!product) {
-    showToast('Товар не найден: ' + q);
-    return;
-  }
+  const product = cashState.products.find(p => p.barcode === q || p.name.toLowerCase().includes(q.toLowerCase()));
+  if (!product) { showToast('Товар не найден: ' + q); return; }
   const existing = cashState.cart.find(c => c.barcode === product.barcode);
-  if (existing) {
-    existing.qty += qty;
-  } else {
-    cashState.cart.push({ ...product, qty });
-  }
+  if (existing) existing.qty += qty;
+  else cashState.cart.push({ ...product, qty });
   document.getElementById('barcodeInput').value = '';
   document.getElementById('qtyInput').value = 1;
   renderCart();
@@ -803,10 +545,7 @@ window.removeFromCart = function(barcode) {
   renderCart();
 };
 
-window.clearCart = function() {
-  cashState.cart = [];
-  renderCart();
-};
+window.clearCart = function() { cashState.cart = []; renderCart(); };
 
 function renderCart() {
   const body = document.getElementById('cartBody');
@@ -830,15 +569,12 @@ function renderCart() {
   document.getElementById('cartTotal').textContent = total.toFixed(2) + ' ₽';
 }
 
-function getTotal() {
-  return cashState.cart.reduce((s, i) => s + i.price * i.qty, 0);
-}
+function getTotal() { return cashState.cart.reduce((s, i) => s + i.price * i.qty, 0); }
 
 // ==================== ОПЛАТА ====================
 window.openPayModal = function(method) {
   if (!cashState.cart.length) { showToast('Корзина пуста'); return; }
   cashState.payMethod = method;
-
   document.getElementById('payModal').classList.add('show');
   document.getElementById('payTitle').textContent = method === 'cash' ? '💵 Оплата наличными' : '💳 Оплата картой';
   document.getElementById('payCashBlock').classList.toggle('hidden', method !== 'cash');
@@ -846,7 +582,6 @@ window.openPayModal = function(method) {
   document.getElementById('payWaitBlock').classList.add('hidden');
   document.getElementById('payConfirmBtn').classList.remove('hidden');
   document.getElementById('payConfirmBtn').disabled = false;
-
   if (method === 'cash') {
     document.getElementById('cashGiven').value = '';
     document.getElementById('changeVal').textContent = '—';
@@ -856,18 +591,12 @@ window.openPayModal = function(method) {
 
 window.closePayModal = function() {
   document.getElementById('payModal').classList.remove('show');
-  if (cashState.payResolve) {
-    cashState.payResolve(false);
-    cashState.payResolve = null;
-  }
 };
 
 window.calcChange = function() {
   const total = getTotal();
   const given = parseFloat(document.getElementById('cashGiven').value) || 0;
-  document.getElementById('changeVal').textContent = given >= total
-    ? (given - total).toFixed(2) + ' ₽'
-    : 'Недостаточно';
+  document.getElementById('changeVal').textContent = given >= total ? (given - total).toFixed(2) + ' ₽' : 'Недостаточно';
 };
 
 window.confirmPayment = async function() {
@@ -890,12 +619,30 @@ window.confirmPayment = async function() {
     document.getElementById('payWaitText').textContent = 'Отправка на терминал...';
 
     try {
-      await update(ref(db, `${TERM_PATH}/${cashState.termId}`), {
-        status: 'waiting_pin',
-        amount: total,
-        updatedAt: Date.now()
-      });
-      document.getElementById('payWaitText').textContent = 'Ожидание PIN от клиента...';
+      // Определяем, нужен ли PIN
+      const needsPin = total > PIN_THRESHOLD;
+
+      if (needsPin) {
+        // Отправляем на терминал, ждём PIN
+        await update(ref(db, `${TERM_PATH}/${cashState.termId}`), {
+          status: 'waiting_pin',
+          amount: total,
+          updatedAt: Date.now()
+        });
+        document.getElementById('payWaitText').textContent = 'Ожидание PIN от клиента...';
+      } else {
+        // Сумма <= 1000 → PIN не нужен, оплата проходит сразу
+        await update(ref(db, `${TERM_PATH}/${cashState.termId}`), {
+          status: 'success',
+          amount: total,
+          updatedAt: Date.now()
+        });
+        // Дадим терминалу секунду на обновление UI, затем закроем
+        setTimeout(() => {
+          finishSale('Карта');
+          closePayModal();
+        }, 500);
+      }
     } catch (e) {
       showToast('Ошибка: ' + e.message);
       closePayModal();
@@ -961,18 +708,13 @@ function cashSubscribe(id) {
   cashState.unsubscribe = onValue(ref(db, `${TERM_PATH}/${id}`), (snap) => {
     const data = snap.val();
     cashState.termData = data;
-    if (!data) {
-      cashState.termStatus = 'disconnected';
-    } else if (data.status === 'waiting') {
-      cashState.termStatus = 'waiting';
-    } else {
-      cashState.termStatus = 'busy';
-    }
+    if (!data) cashState.termStatus = 'disconnected';
+    else if (data.status === 'waiting') cashState.termStatus = 'waiting';
+    else cashState.termStatus = 'busy';
     updateTermBar();
 
     // Если открыта модалка оплаты и ждём терминал
-    if (document.getElementById('payModal').classList.contains('show') &&
-        cashState.payMethod === 'card' && data) {
+    if (document.getElementById('payModal').classList.contains('show') && cashState.payMethod === 'card' && data) {
       if (data.status === 'waiting_pin') {
         document.getElementById('payWaitText').textContent = 'Ожидание PIN от клиента...';
       } else if (data.status === 'success') {
@@ -992,7 +734,7 @@ function cashSubscribe(id) {
   }, (e) => console.error('cash sub', e));
 }
 
-// ==================== ВКЛАДКИ КАССЫ ====================
+// ==================== ВКЛАДКИ ====================
 window.switchCashierTab = function(tab) {
   document.querySelectorAll('.cashier-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.getElementById('tab-sale').classList.toggle('hidden', tab !== 'sale');
@@ -1008,26 +750,13 @@ if (ROLE === 'terminal') {
 } else {
   document.getElementById('terminalApp').classList.add('hidden');
   document.getElementById('cashierApp').classList.remove('hidden');
-
   loadProducts();
   renderProducts();
   renderCart();
   updateTermBar();
-
   document.getElementById('termIdInput').value = cashState.termId;
-  if (cashState.termId) {
-    cashSubscribe(cashState.termId);
-  }
+  if (cashState.termId) cashSubscribe(cashState.termId);
 }
-
-// Защита от случайного закрытия
-window.addEventListener('beforeunload', (e) => {
-  if (termState.myId) {
-    e.preventDefault();
-    e.returnValue = '';
-  }
-});
-
 console.log('[APP READY]', ROLE);
 </script>
 </body>
