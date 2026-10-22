@@ -40,7 +40,6 @@
     line-height: 1.5;
   }
 
-  /* ---------- ГЛАВНЫЙ ЭКРАН / ПЕРЕКЛЮЧАТЕЛЬ РОЛЕЙ ---------- */
   .app-container {
     width: 100%;
     max-width: 480px;
@@ -50,7 +49,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 600px;
+    min-height: 620px;
     position: relative;
   }
 
@@ -97,7 +96,6 @@
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ---------- ОБЩИЕ ЭЛЕМЕНТЫ ---------- */
   h1 { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 4px; }
   .sub { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
 
@@ -127,8 +125,6 @@
 
   .btn-success { background: linear-gradient(135deg, var(--green), #34d399); color: #fff; }
   .btn-danger { background: linear-gradient(135deg, var(--red), #f87171); color: #fff; }
-  .btn-yellow { background: linear-gradient(135deg, var(--yellow), #f59e0b); color: #fff; }
-
   .btn-ghost { background: var(--bg); color: var(--text-muted); }
 
   .input-group { margin-bottom: 16px; }
@@ -152,13 +148,14 @@
   }
 
   .status-badge {
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    margin-bottom: 16px;
   }
   .status-badge.waiting { background: #f1f5f9; color: var(--text-muted); }
   .status-badge.connected { background: #dcfce7; color: #15803d; }
@@ -190,7 +187,6 @@
   .screen .message { font-size: 18px; line-height: 1.4; word-break: break-word; }
   .screen .amount { font-size: 32px; color: #FFD700; margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.5); font-weight: 800; }
 
-  /* ---------- ТЕРМИНАЛ / PIN ---------- */
   .pin-keypad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -215,7 +211,6 @@
   .pin-dots .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--primary); transition: 0.2s; }
   .pin-dots .dot.filled { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
 
-  /* ---------- АНИМАЦИИ ---------- */
   .loading-spinner {
     width: 40px; height: 40px;
     border: 4px solid rgba(99,102,241,0.2);
@@ -235,14 +230,14 @@
 
   .terminal-id-display {
     text-align: center;
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 900;
     color: var(--primary);
-    letter-spacing: 4px;
+    letter-spacing: 6px;
     font-family: 'Courier New', monospace;
     background: #eef2ff;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 14px;
+    padding: 20px;
     margin-bottom: 20px;
     border: 2px dashed var(--primary-light);
   }
@@ -265,6 +260,9 @@
     transition: 0.3s;
     pointer-events: none;
     white-space: nowrap;
+    max-width: 90vw;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
   .toast.show { opacity: 1; bottom: 30px; }
 </style>
@@ -272,37 +270,131 @@
 <body>
 
 <div class="app-container" id="app">
-  <!-- Переключатель ролей -->
   <div class="role-switcher">
-    <button id="roleCashier" class="active" onclick="switchRole('cashier')">💼 Касса</button>
-    <button id="roleTerminal" onclick="switchRole('terminal')">📟 Терминал</button>
+    <button id="roleTerminal" class="active" onclick="switchRole('terminal')">📟 Терминал</button>
+    <button id="roleCashier" onclick="switchRole('cashier')">💼 Касса</button>
   </div>
 
-  <!-- ================= КАССА (ПК) ================= -->
-  <div class="panel active" id="panelCashier">
-    <h1>Касса</h1>
-    <div class="sub">Создайте терминал и отправляйте запросы на оплату</div>
+  <!-- ================= ТЕРМИНАЛ (создаёт ID) ================= -->
+  <div class="panel active" id="panelTerminal">
+    <h1>Терминал</h1>
+    <div class="sub">Создайте ID и сообщите кассиру</div>
 
     <!-- Шаг 1: Создание терминала -->
+    <div id="terminalStep1">
+      <button class="btn btn-primary" style="width:100%;padding:18px;font-size:16px;" onclick="createTerminal()">
+        ✨ Создать терминал
+      </button>
+    </div>
+
+    <!-- Шаг 2: ID показан, ждём кассу -->
+    <div id="terminalStep2" class="hidden">
+      <div class="status-badge waiting" id="terminalStatusBadge">
+        <span>⏳</span> Ожидание кассы
+      </div>
+      <div class="terminal-id-display" id="terminalIdDisplay">----</div>
+      <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:16px;">
+        Сообщите этот ID кассиру
+      </div>
+      <button class="btn btn-ghost" style="width:100%;" onclick="resetTerminal()">🔄 Сбросить</button>
+    </div>
+
+    <!-- Шаг 3: Касса подключается, нужно подтвердить -->
+    <div id="terminalStep3" class="hidden">
+      <div class="status-badge pending" style="margin-bottom:16px;">
+        <span>⏳</span> Касса подключается...
+      </div>
+      <div class="screen">
+        <div class="title">Запрос на подключение</div>
+        <div class="message">Касса хочет подключиться</div>
+      </div>
+      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="confirmConnection()" id="terminalConfirmBtn">
+        ✅ Подтвердить подключение
+      </button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="resetTerminal()">❌ Отмена</button>
+    </div>
+
+    <!-- Шаг 4: Соединение установлено, ждём сумму -->
+    <div id="terminalStep4" class="hidden">
+      <div class="status-badge connected" style="margin-bottom:16px;">
+        <span>✅</span> Касса подключена
+      </div>
+      <div class="screen">
+        <div class="title">Готов к оплате</div>
+        <div class="message">Ожидание суммы от кассира...</div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;" onclick="resetTerminal()">❌ Отмена</button>
+    </div>
+
+    <!-- Шаг 5: Сумма получена, вводим PIN -->
+    <div id="terminalStep5" class="hidden">
+      <div class="status-badge connected" style="margin-bottom:16px;">
+        <span>✅</span> Касса подключена
+      </div>
+      <div class="screen">
+        <div class="title">К оплате</div>
+        <div class="amount" id="terminalAmountDisplay">0.00 ₽</div>
+      </div>
+      <div class="input-group">
+        <label>Введите PIN-код (4 цифры)</label>
+        <div class="pin-dots" id="terminalPinDots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="pin-keypad" id="terminalPinPad"></div>
+      </div>
+      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="submitPin()" id="terminalSubmitPinBtn" disabled>
+        ✅ Оплатить
+      </button>
+      <button class="btn btn-danger" style="width:100%;" onclick="cancelTerminalPayment()">❌ Отказ</button>
+    </div>
+
+    <!-- Шаг 6: Обработка -->
+    <div id="terminalStep6" class="hidden">
+      <div class="loading-spinner"></div>
+      <div class="screen">
+        <div class="title">Обработка</div>
+        <div class="message">Связь с банком...</div>
+      </div>
+    </div>
+
+    <!-- Шаг 7: Результат -->
+    <div id="terminalStep7" class="hidden">
+      <div class="confetti-container" id="confettiContainer"></div>
+      <div id="terminalResultContent" style="text-align:center;"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:24px;" onclick="resetTerminal()">🔄 Новая операция</button>
+    </div>
+  </div>
+
+  <!-- ================= КАССА (подключается) ================= -->
+  <div class="panel" id="panelCashier">
+    <h1>Касса</h1>
+    <div class="sub">Введите ID терминала и подключитесь</div>
+
+    <!-- Шаг 1: Ввод ID -->
     <div id="cashierStep1">
       <div class="input-group">
-        <label>ID терминала (4 цифры)</label>
-        <div class="terminal-id-display" id="cashierTerminalId">----</div>
+        <label>ID терминала</label>
+        <input type="tel" id="cashierIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
       </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="createTerminal()">✨ Создать терминал</button>
+      <button class="btn btn-primary" style="width:100%;" onclick="connectToTerminal()">🔌 Подключиться</button>
     </div>
 
-    <!-- Шаг 2: Ожидание терминала -->
+    <!-- Шаг 2: Ожидание подтверждения от терминала -->
     <div id="cashierStep2" class="hidden">
-      <div class="status-badge waiting" id="cashierStatusBadge" style="margin-bottom:16px;">
-        <span>⏳</span> Ожидание подключения терминала
+      <div class="status-badge pending" style="margin-bottom:16px;">
+        <span>⏳</span> Ожидание подтверждения терминала...
       </div>
-      <div class="terminal-id-display" id="cashierTerminalIdDisplay">----</div>
-      <button class="btn btn-primary" style="width:100%;" onclick="requestPayment()" id="cashierRequestBtn">📤 Отправить запрос на терминал</button>
-      <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="resetCashier()">🔄 Сбросить</button>
+      <div class="screen">
+        <div class="title">ID терминала</div>
+        <div class="message" id="cashierTerminalIdDisplay">----</div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;" onclick="resetCashier()">❌ Отмена</button>
     </div>
 
-    <!-- Шаг 3: Ввод суммы -->
+    <!-- Шаг 3: Подключено, ввод суммы -->
     <div id="cashierStep3" class="hidden">
       <div class="status-badge connected" style="margin-bottom:16px;">
         <span>✅</span> Терминал подключён
@@ -311,11 +403,13 @@
         <label>Сумма к оплате (₽)</label>
         <input type="number" id="cashierAmount" placeholder="0.00" min="1" step="0.01">
       </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="sendAmountToTerminal()" id="cashierSendAmountBtn">💳 Отправить на терминал</button>
+      <button class="btn btn-primary" style="width:100%;" onclick="sendAmountToTerminal()" id="cashierSendAmountBtn">
+        💳 Отправить на терминал
+      </button>
       <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="resetCashier()">❌ Отмена</button>
     </div>
 
-    <!-- Шаг 4: Ожидание PIN от клиента -->
+    <!-- Шаг 4: Сумма отправлена, ждём PIN -->
     <div id="cashierStep4" class="hidden">
       <div class="status-badge pending" style="margin-bottom:16px;">
         <span>⏳</span> Ожидание PIN-кода клиента...
@@ -334,73 +428,6 @@
       <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="resetCashier()">🔄 Новая операция</button>
     </div>
   </div>
-
-  <!-- ================= ТЕРМИНАЛ (КЛИЕНТ) ================= -->
-  <div class="panel" id="panelTerminal">
-    <h1>Терминал</h1>
-    <div class="sub">Введите ID терминала для подключения</div>
-
-    <!-- Шаг 1: Подключение -->
-    <div id="terminalStep1">
-      <div class="input-group">
-        <label>ID терминала</label>
-        <input type="tel" id="terminalIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
-      </div>
-      <button class="btn btn-primary" style="width:100%;" onclick="connectToTerminal()">🔌 Подключиться</button>
-    </div>
-
-    <!-- Шаг 2: Ожидание подтверждения -->
-    <div id="terminalStep2" class="hidden">
-      <div class="status-badge waiting" style="margin-bottom:16px;">
-        <span>⏳</span> Подключение...
-      </div>
-      <div class="screen">
-        <div class="title">Ожидание</div>
-        <div class="message">Ожидание запроса от кассира</div>
-      </div>
-      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="confirmConnection()" id="terminalConfirmBtn">✅ Подтвердить подключение</button>
-      <button class="btn btn-ghost" style="width:100%;" onclick="resetTerminal()">❌ Отмена</button>
-    </div>
-
-    <!-- Шаг 3: Сумма получена -->
-    <div id="terminalStep3" class="hidden">
-      <div class="status-badge connected" style="margin-bottom:16px;">
-        <span>✅</span> Подключено
-      </div>
-      <div class="screen">
-        <div class="title">К оплате</div>
-        <div class="amount" id="terminalAmountDisplay">0.00 ₽</div>
-      </div>
-      <div class="input-group">
-        <label>Введите PIN-код (4 цифры)</label>
-        <div class="pin-dots" id="terminalPinDots">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-        <div class="pin-keypad" id="terminalPinPad"></div>
-      </div>
-      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="submitPin()" id="terminalSubmitPinBtn" disabled>✅ Оплатить</button>
-      <button class="btn btn-danger" style="width:100%;" onclick="cancelTerminalPayment()">❌ Отказ</button>
-    </div>
-
-    <!-- Шаг 4: Обработка -->
-    <div id="terminalStep4" class="hidden">
-      <div class="loading-spinner"></div>
-      <div class="screen">
-        <div class="title">Обработка</div>
-        <div class="message">Связь с банком...</div>
-      </div>
-    </div>
-
-    <!-- Шаг 5: Результат -->
-    <div id="terminalStep5" class="hidden">
-      <div class="confetti-container" id="confettiContainer"></div>
-      <div id="terminalResultContent" style="text-align:center;"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:24px;" onclick="resetTerminal()">🔄 Новая операция</button>
-    </div>
-  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -408,7 +435,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getDatabase, ref, onValue, set, update, remove, onDisconnect, get, child
+  getDatabase, ref, onValue, set, update, remove, onDisconnect, get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ==================== FIREBASE ====================
@@ -426,26 +453,26 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const TERMINALS_PATH = 'payment_terminals';
+const CORRECT_PIN = '1111';
 
 // ==================== СОСТОЯНИЕ ====================
 let state = {
-  role: 'cashier', // cashier | terminal
-  terminalId: null, // ID текущего терминала (для кассы)
-  connectedTerminalId: null, // ID терминала, к которому подключён клиент
+  role: 'terminal',
+  myTerminalId: null,        // ID, который создал терминал
+  connectedCashierTo: null,  // ID, к которому подключилась касса
   pin: '',
   pinLength: 4,
-  unsubscribe: null, // функция отписки от текущего терминала
-  cashierUnsubscribe: null,
+  terminalUnsubscribe: null, // подписка терминала
+  cashierUnsubscribe: null,  // подписка кассы
 };
-
-const CORRECT_PIN = '1111';
 
 // ==================== УТИЛИТЫ ====================
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function generateTerminalId() {
@@ -454,37 +481,40 @@ function generateTerminalId() {
 
 function switchRole(role) {
   state.role = role;
-  document.getElementById('roleCashier').classList.toggle('active', role === 'cashier');
   document.getElementById('roleTerminal').classList.toggle('active', role === 'terminal');
-  document.getElementById('panelCashier').classList.toggle('active', role === 'cashier');
+  document.getElementById('roleCashier').classList.toggle('active', role === 'cashier');
   document.getElementById('panelTerminal').classList.toggle('active', role === 'terminal');
+  document.getElementById('panelCashier').classList.toggle('active', role === 'cashier');
 
-  // При смене роли сбрасываем незавершённые операции
-  if (role === 'cashier') {
+  if (role === 'terminal') {
     if (state.cashierUnsubscribe) { state.cashierUnsubscribe(); state.cashierUnsubscribe = null; }
-    if (state.unsubscribe) { state.unsubscribe(); state.unsubscribe = null; }
     resetCashier();
   } else {
-    if (state.cashierUnsubscribe) { state.cashierUnsubscribe(); state.cashierUnsubscribe = null; }
-    if (state.unsubscribe) { state.unsubscribe(); state.unsubscribe = null; }
+    if (state.terminalUnsubscribe) { state.terminalUnsubscribe(); state.terminalUnsubscribe = null; }
     resetTerminal();
   }
 }
 
-// ==================== КАССА ====================
-function resetCashier() {
-  if (state.cashierUnsubscribe) {
-    state.cashierUnsubscribe();
-    state.cashierUnsubscribe = null;
+// ==================== ТЕРМИНАЛ (создаёт ID) ====================
+function resetTerminal() {
+  if (state.terminalUnsubscribe) {
+    state.terminalUnsubscribe();
+    state.terminalUnsubscribe = null;
   }
-  state.terminalId = null;
-  document.getElementById('cashierStep1').classList.remove('hidden');
-  document.getElementById('cashierStep2').classList.add('hidden');
-  document.getElementById('cashierStep3').classList.add('hidden');
-  document.getElementById('cashierStep4').classList.add('hidden');
-  document.getElementById('cashierStep5').classList.add('hidden');
-  document.getElementById('cashierTerminalId').textContent = '----';
-  document.getElementById('cashierAmount').value = '';
+  // Если был создан терминал — удалим его с сервера
+  if (state.myTerminalId) {
+    remove(ref(db, `${TERMINALS_PATH}/${state.myTerminalId}`)).catch(() => {});
+    state.myTerminalId = null;
+  }
+  state.pin = '';
+
+  document.getElementById('terminalStep1').classList.remove('hidden');
+  ['terminalStep2','terminalStep3','terminalStep4','terminalStep5','terminalStep6','terminalStep7'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('terminalConfirmBtn').disabled = false;
+  updatePinDots();
+  buildPinPad();
 }
 
 async function createTerminal() {
@@ -501,222 +531,36 @@ async function createTerminal() {
       updatedAt: Date.now()
     });
 
-    // Регистрируем "уборку" при разрыве соединения
+    // При закрытии страницы терминала — удалим его
     onDisconnect(terminalRef).remove();
 
-    state.terminalId = id;
+    state.myTerminalId = id;
 
-    // Сохраняем ID для текущей сессии (можно в localStorage, если нужно)
-    localStorage.setItem('current_terminal_id', id);
+    document.getElementById('terminalIdDisplay').textContent = id;
+    document.getElementById('terminalStep1').classList.add('hidden');
+    document.getElementById('terminalStep2').classList.remove('hidden');
 
-    document.getElementById('cashierTerminalId').textContent = id;
-    document.getElementById('cashierTerminalIdDisplay').textContent = id;
-
-    document.getElementById('cashierStep1').classList.add('hidden');
-    document.getElementById('cashierStep2').classList.remove('hidden');
-
-    // Подписываемся на изменения
-    subscribeToTerminalFromCashier(id);
+    subscribeTerminal(id);
 
     showToast(`Терминал ${id} создан`);
   } catch (err) {
     console.error(err);
-    showToast('Ошибка создания терминала: ' + err.message);
+    showToast('Ошибка создания: ' + err.message);
   }
 }
 
-function subscribeToTerminalFromCashier(id) {
-  if (state.cashierUnsubscribe) state.cashierUnsubscribe();
+function subscribeTerminal(id) {
+  if (state.terminalUnsubscribe) state.terminalUnsubscribe();
   const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
 
-  state.cashierUnsubscribe = onValue(terminalRef, (snapshot) => {
+  state.terminalUnsubscribe = onValue(terminalRef, (snapshot) => {
     const data = snapshot.val();
     if (!data) {
-      // Терминал удалён
-      showToast('Терминал отключён');
-      resetCashier();
-      return;
-    }
-    updateCashierUI(data);
-  }, (err) => {
-    console.error('Cashier subscription error:', err);
-  });
-}
-
-function updateCashierUI(data) {
-  const status = data.status;
-
-  // Обновляем бейдж
-  const badge = document.getElementById('cashierStatusBadge');
-
-  if (status === 'waiting_connection') {
-    badge.className = 'status-badge waiting';
-    badge.innerHTML = '<span>⏳</span> Ожидание подключения терминала';
-    document.getElementById('cashierStep2').classList.remove('hidden');
-    document.getElementById('cashierStep3').classList.add('hidden');
-    document.getElementById('cashierStep4').classList.add('hidden');
-    document.getElementById('cashierStep5').classList.add('hidden');
-  } else if (status === 'pending_connection') {
-    badge.className = 'status-badge pending';
-    badge.innerHTML = '<span>⏳</span> Клиент подключается...';
-    document.getElementById('cashierStep2').classList.remove('hidden');
-    document.getElementById('cashierStep3').classList.add('hidden');
-    document.getElementById('cashierStep4').classList.add('hidden');
-    document.getElementById('cashierStep5').classList.add('hidden');
-  } else if (status === 'connected') {
-    badge.className = 'status-badge connected';
-    badge.innerHTML = '<span>✅</span> Терминал подключён';
-    document.getElementById('cashierStep2').classList.add('hidden');
-    document.getElementById('cashierStep3').classList.remove('hidden');
-    document.getElementById('cashierStep4').classList.add('hidden');
-    document.getElementById('cashierStep5').classList.add('hidden');
-  } else if (status === 'waiting_pin') {
-    document.getElementById('cashierStep3').classList.add('hidden');
-    document.getElementById('cashierStep4').classList.remove('hidden');
-    document.getElementById('cashierPendingAmount').textContent = (data.amount || 0).toFixed(2) + ' ₽';
-  } else if (status === 'success' || status === 'fail') {
-    document.getElementById('cashierStep3').classList.add('hidden');
-    document.getElementById('cashierStep4').classList.add('hidden');
-    document.getElementById('cashierStep5').classList.remove('hidden');
-
-    const content = document.getElementById('cashierResultContent');
-    if (status === 'success') {
-      content.innerHTML = `
-        <div class="result-icon">✅</div>
-        <h2 style="text-align:center;color:var(--green);margin-bottom:8px;">Успешно</h2>
-        <div style="text-align:center;font-size:18px;font-weight:700;color:var(--text);">
-          Оплата ${(data.amount || 0).toFixed(2)} ₽
-        </div>
-        <div style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:8px;">
-          PIN подтверждён
-        </div>
-      `;
-      // Конфетти
-      spawnConfetti();
-    } else {
-      content.innerHTML = `
-        <div class="result-icon">❌</div>
-        <h2 style="text-align:center;color:var(--red);margin-bottom:8px;">Отказ</h2>
-        <div style="text-align:center;font-size:14px;color:var(--text-muted);">
-          ${data.failReason === 'wrong_pin' ? 'Неверный PIN-код' : 'Операция отклонена'}
-        </div>
-      `;
-    }
-  }
-}
-
-async function requestPayment() {
-  if (!state.terminalId) return;
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.terminalId}`);
-  try {
-    await update(terminalRef, {
-      status: 'request_sent',
-      updatedAt: Date.now()
-    });
-    showToast('Запрос отправлен на терминал');
-    document.getElementById('cashierRequestBtn').disabled = true;
-  } catch (err) {
-    console.error(err);
-    showToast('Ошибка: ' + err.message);
-  }
-}
-
-async function sendAmountToTerminal() {
-  const amount = parseFloat(document.getElementById('cashierAmount').value);
-  if (!amount || amount <= 0) {
-    showToast('Введите корректную сумму');
-    return;
-  }
-  if (!state.terminalId) return;
-
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.terminalId}`);
-  try {
-    await update(terminalRef, {
-      status: 'waiting_pin',
-      amount: amount,
-      updatedAt: Date.now()
-    });
-    showToast(`Сумма ${amount.toFixed(2)} ₽ отправлена`);
-    document.getElementById('cashierSendAmountBtn').disabled = true;
-  } catch (err) {
-    console.error(err);
-    showToast('Ошибка: ' + err.message);
-  }
-}
-
-// ==================== ТЕРМИНАЛ ====================
-function resetTerminal() {
-  if (state.unsubscribe) {
-    state.unsubscribe();
-    state.unsubscribe = null;
-  }
-  state.connectedTerminalId = null;
-  state.pin = '';
-
-  document.getElementById('terminalStep1').classList.remove('hidden');
-  document.getElementById('terminalStep2').classList.add('hidden');
-  document.getElementById('terminalStep3').classList.add('hidden');
-  document.getElementById('terminalStep4').classList.add('hidden');
-  document.getElementById('terminalStep5').classList.add('hidden');
-  document.getElementById('terminalIdInput').value = '';
-  document.getElementById('terminalConfirmBtn').disabled = false;
-  updatePinDots();
-  buildPinPad();
-}
-
-async function connectToTerminal() {
-  const id = document.getElementById('terminalIdInput').value.trim();
-  if (id.length !== 4) {
-    showToast('Введите 4-значный ID терминала');
-    return;
-  }
-
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
-  try {
-    const snapshot = await get(terminalRef);
-    if (!snapshot.exists()) {
-      showToast('Терминал не найден');
-      return;
-    }
-
-    const data = snapshot.val();
-    if (data.status !== 'waiting_connection' && data.status !== 'request_sent') {
-      showToast('Терминал занят');
-      return;
-    }
-
-    state.connectedTerminalId = id;
-
-    // Отправляем запрос на подключение
-    await update(terminalRef, {
-      status: 'pending_connection',
-      clientConnectedAt: Date.now(),
-      updatedAt: Date.now()
-    });
-
-    document.getElementById('terminalStep1').classList.add('hidden');
-    document.getElementById('terminalStep2').classList.remove('hidden');
-
-    // Подписываемся
-    subscribeToTerminalFromTerminal(id);
-
-    showToast('Запрос на подключение отправлен');
-  } catch (err) {
-    console.error(err);
-    showToast('Ошибка: ' + err.message);
-  }
-}
-
-function subscribeToTerminalFromTerminal(id) {
-  if (state.unsubscribe) state.unsubscribe();
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
-
-  state.unsubscribe = onValue(terminalRef, (snapshot) => {
-    const data = snapshot.val();
-    if (!data) {
-      // Терминал удалён
-      showToast('Терминал отключён');
-      resetTerminal();
+      // Терминал удалён с сервера (например, касса сбросила)
+      if (state.myTerminalId === id) {
+        showToast('Терминал закрыт');
+        resetTerminal();
+      }
       return;
     }
     updateTerminalUI(data);
@@ -727,29 +571,49 @@ function subscribeToTerminalFromTerminal(id) {
 
 function updateTerminalUI(data) {
   const status = data.status;
+  const badge = document.getElementById('terminalStatusBadge');
 
-  if (status === 'pending_connection') {
-    document.getElementById('terminalStep2').classList.remove('hidden');
+  // Скрываем все шаги кроме тех, что нужны
+  const steps = {
+    1: 'terminalStep1',
+    2: 'terminalStep2',
+    3: 'terminalStep3',
+    4: 'terminalStep4',
+    5: 'terminalStep5',
+    6: 'terminalStep6',
+    7: 'terminalStep7',
+  };
+
+  const show = (stepNum) => {
+    Object.entries(steps).forEach(([n, id]) => {
+      document.getElementById(id).classList.toggle('hidden', Number(n) !== stepNum);
+    });
+  };
+
+  if (status === 'waiting_connection') {
+    show(2);
+    if (badge) {
+      badge.className = 'status-badge waiting';
+      badge.innerHTML = '<span>⏳</span> Ожидание кассы';
+    }
+  } else if (status === 'pending_connection') {
+    show(3);
     document.getElementById('terminalConfirmBtn').disabled = false;
-  } else if (status === 'request_sent') {
-    // Если касса прислала запрос до нашего подтверждения — покажем, что можно подключаться
-    document.getElementById('terminalStep2').classList.remove('hidden');
   } else if (status === 'connected') {
-    document.getElementById('terminalStep2').classList.add('hidden');
-    document.getElementById('terminalStep3').classList.add('hidden');
-    showToast('Соединение установлено');
+    show(4);
   } else if (status === 'waiting_pin') {
-    document.getElementById('terminalStep2').classList.add('hidden');
-    document.getElementById('terminalStep3').classList.remove('hidden');
+    show(5);
     document.getElementById('terminalAmountDisplay').textContent = (data.amount || 0).toFixed(2) + ' ₽';
-    state.pin = '';
-    updatePinDots();
-    buildPinPad();
+    // Сбрасываем PIN только если сумма изменилась
+    if (data._lastAmount !== data.amount) {
+      state.pin = '';
+      updatePinDots();
+      buildPinPad();
+    }
+  } else if (status === 'processing') {
+    show(6);
   } else if (status === 'success' || status === 'fail') {
-    document.getElementById('terminalStep3').classList.add('hidden');
-    document.getElementById('terminalStep4').classList.add('hidden');
-    document.getElementById('terminalStep5').classList.remove('hidden');
-
+    show(7);
     const content = document.getElementById('terminalResultContent');
     if (status === 'success') {
       content.innerHTML = `
@@ -776,22 +640,22 @@ function updateTerminalUI(data) {
 }
 
 async function confirmConnection() {
-  if (!state.connectedTerminalId) return;
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.connectedTerminalId}`);
+  if (!state.myTerminalId) return;
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.myTerminalId}`);
   try {
     await update(terminalRef, {
       status: 'connected',
       updatedAt: Date.now()
     });
     document.getElementById('terminalConfirmBtn').disabled = true;
-    showToast('Соединение установлено');
+    showToast('Касса подключена');
   } catch (err) {
     console.error(err);
     showToast('Ошибка: ' + err.message);
   }
 }
 
-// ==================== PIN-КЛАВИАТУРА ====================
+// ==================== PIN ====================
 function buildPinPad() {
   const pad = document.getElementById('terminalPinPad');
   if (!pad) return;
@@ -833,18 +697,16 @@ function updatePinDots() {
 }
 
 async function submitPin() {
-  if (!state.connectedTerminalId) return;
+  if (!state.myTerminalId) return;
   if (state.pin.length !== state.pinLength) return;
 
-  // Скрываем клавиатуру и показываем анимацию
-  document.getElementById('terminalStep3').classList.add('hidden');
-  document.getElementById('terminalStep4').classList.remove('hidden');
+  document.getElementById('terminalStep5').classList.add('hidden');
+  document.getElementById('terminalStep6').classList.remove('hidden');
 
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.connectedTerminalId}`);
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.myTerminalId}`);
   const isCorrect = state.pin === CORRECT_PIN;
 
   try {
-    // Небольшая задержка для анимации "связь с банком"
     await new Promise(r => setTimeout(r, 2000));
 
     if (isCorrect) {
@@ -864,14 +726,14 @@ async function submitPin() {
   } catch (err) {
     console.error(err);
     showToast('Ошибка: ' + err.message);
-    document.getElementById('terminalStep4').classList.add('hidden');
-    document.getElementById('terminalStep3').classList.remove('hidden');
+    document.getElementById('terminalStep6').classList.add('hidden');
+    document.getElementById('terminalStep5').classList.remove('hidden');
   }
 }
 
 async function cancelTerminalPayment() {
-  if (!state.connectedTerminalId) return;
-  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.connectedTerminalId}`);
+  if (!state.myTerminalId) return;
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.myTerminalId}`);
   try {
     await update(terminalRef, {
       status: 'fail',
@@ -881,6 +743,162 @@ async function cancelTerminalPayment() {
     });
   } catch (err) {
     console.error(err);
+  }
+}
+
+// ==================== КАССА (подключается) ====================
+function resetCashier() {
+  if (state.cashierUnsubscribe) {
+    state.cashierUnsubscribe();
+    state.cashierUnsubscribe = null;
+  }
+  state.connectedCashierTo = null;
+
+  document.getElementById('cashierStep1').classList.remove('hidden');
+  ['cashierStep2','cashierStep3','cashierStep4','cashierStep5'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('cashierIdInput').value = '';
+  document.getElementById('cashierAmount').value = '';
+  document.getElementById('cashierSendAmountBtn').disabled = false;
+}
+
+async function connectToTerminal() {
+  const id = document.getElementById('cashierIdInput').value.trim();
+  if (id.length !== 4) {
+    showToast('Введите 4-значный ID терминала');
+    return;
+  }
+
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
+  try {
+    const snapshot = await get(terminalRef);
+    if (!snapshot.exists()) {
+      showToast('Терминал не найден');
+      return;
+    }
+
+    const data = snapshot.val();
+    if (data.status !== 'waiting_connection') {
+      showToast('Терминал уже занят');
+      return;
+    }
+
+    state.connectedCashierTo = id;
+
+    await update(terminalRef, {
+      status: 'pending_connection',
+      clientConnectedAt: Date.now(),
+      updatedAt: Date.now()
+    });
+
+    document.getElementById('cashierTerminalIdDisplay').textContent = id;
+    document.getElementById('cashierStep1').classList.add('hidden');
+    document.getElementById('cashierStep2').classList.remove('hidden');
+
+    subscribeCashier(id);
+
+    showToast('Запрос на подключение отправлен');
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка: ' + err.message);
+  }
+}
+
+function subscribeCashier(id) {
+  if (state.cashierUnsubscribe) state.cashierUnsubscribe();
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
+
+  state.cashierUnsubscribe = onValue(terminalRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      showToast('Терминал отключён');
+      resetCashier();
+      return;
+    }
+    updateCashierUI(data);
+  }, (err) => {
+    console.error('Cashier subscription error:', err);
+  });
+}
+
+function updateCashierUI(data) {
+  const status = data.status;
+
+  const steps = {
+    1: 'cashierStep1',
+    2: 'cashierStep2',
+    3: 'cashierStep3',
+    4: 'cashierStep4',
+    5: 'cashierStep5',
+  };
+
+  const show = (stepNum) => {
+    Object.entries(steps).forEach(([n, id]) => {
+      document.getElementById(id).classList.toggle('hidden', Number(n) !== stepNum);
+    });
+  };
+
+  if (status === 'waiting_connection') {
+    show(1);
+  } else if (status === 'pending_connection') {
+    show(2);
+  } else if (status === 'connected') {
+    show(3);
+    document.getElementById('cashierSendAmountBtn').disabled = false;
+  } else if (status === 'waiting_pin') {
+    show(4);
+    document.getElementById('cashierPendingAmount').textContent = (data.amount || 0).toFixed(2) + ' ₽';
+  } else if (status === 'processing') {
+    show(4);
+  } else if (status === 'success' || status === 'fail') {
+    show(5);
+    const content = document.getElementById('cashierResultContent');
+    if (status === 'success') {
+      content.innerHTML = `
+        <div class="result-icon">✅</div>
+        <h2 style="text-align:center;color:var(--green);margin-bottom:8px;">Успешно</h2>
+        <div style="text-align:center;font-size:18px;font-weight:700;color:var(--text);">
+          Оплата ${(data.amount || 0).toFixed(2)} ₽
+        </div>
+        <div style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:8px;">
+          PIN подтверждён
+        </div>
+      `;
+      spawnConfetti();
+    } else {
+      content.innerHTML = `
+        <div class="result-icon">❌</div>
+        <h2 style="text-align:center;color:var(--red);margin-bottom:8px;">Отказ</h2>
+        <div style="text-align:center;font-size:14px;color:var(--text-muted);">
+          ${data.failReason === 'wrong_pin' ? 'Неверный PIN-код' : 'Операция отклонена'}
+        </div>
+      `;
+    }
+  }
+}
+
+async function sendAmountToTerminal() {
+  const amount = parseFloat(document.getElementById('cashierAmount').value);
+  if (!amount || amount <= 0) {
+    showToast('Введите корректную сумму');
+    return;
+  }
+  if (!state.connectedCashierTo) return;
+
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.connectedCashierTo}`);
+  try {
+    await update(terminalRef, {
+      status: 'waiting_pin',
+      amount: amount,
+      _lastAmount: amount,
+      updatedAt: Date.now()
+    });
+    showToast(`Сумма ${amount.toFixed(2)} ₽ отправлена`);
+    document.getElementById('cashierSendAmountBtn').disabled = true;
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка: ' + err.message);
   }
 }
 
@@ -905,25 +923,24 @@ function spawnConfetti() {
   }
 }
 
-// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+// ==================== ЭКСПОРТ ====================
 window.switchRole = switchRole;
 window.createTerminal = createTerminal;
-window.requestPayment = requestPayment;
-window.sendAmountToTerminal = sendAmountToTerminal;
-window.resetCashier = resetCashier;
-window.connectToTerminal = connectToTerminal;
 window.confirmConnection = confirmConnection;
 window.submitPin = submitPin;
 window.cancelTerminalPayment = cancelTerminalPayment;
 window.resetTerminal = resetTerminal;
+window.connectToTerminal = connectToTerminal;
+window.sendAmountToTerminal = sendAmountToTerminal;
+window.resetCashier = resetCashier;
 
-// Ограничим ввод ID только цифрами
-document.getElementById('terminalIdInput').addEventListener('input', (e) => {
+// Ограничение ввода ID для кассы
+document.getElementById('cashierIdInput').addEventListener('input', (e) => {
   e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
 });
 
-// Начинаем с кассы
-switchRole('cashier');
+// Стартуем с терминала
+switchRole('terminal');
 
 </script>
 </body>
