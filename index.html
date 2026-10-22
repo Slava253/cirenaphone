@@ -1,550 +1,930 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Система оповещения - Телефон (Работает даже при плохом интернете)</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: linear-gradient(135deg, #0a0f1a 0%, #0a1a1f 100%);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        body.alarm-active-bg { animation: flashRed 0.3s infinite; }
-        @keyframes flashRed {
-            0% { background: linear-gradient(135deg, #0a0f1a 0%, #0a1a1f 100%); }
-            100% { background: linear-gradient(135deg, #4a0000 0%, #2a0000 100%); }
-        }
-        .container { max-width: 550px; width: 100%; }
-        .phone-panel {
-            background: rgba(10, 20, 28, 0.9);
-            backdrop-filter: blur(16px);
-            border-radius: 50px;
-            padding: 25px;
-            border: 2px solid rgba(255, 100, 80, 0.4);
-        }
-        .connection-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            text-align: center;
-            width: 100%;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-        .connection-badge.online { background: #2c5a3e; color: #aaffaa; }
-        .connection-badge.offline { background: #8b0000; color: #ffaaaa; }
-        .connection-badge.checking { background: #ff884d; color: #1e3a44; }
-        
-        .alarm-card {
-            background: #031016;
-            border-radius: 40px;
-            padding: 25px;
-            margin: 15px 0;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        .alarm-status-icon { font-size: 3.5rem; margin-bottom: 10px; }
-        .alarm-status-text { font-size: 1.5rem; font-weight: bold; }
-        .safe-mode { color: #2ecc71; }
-        .alarm-mode { color: #e74c3c; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
-        .signal-quality {
-            background: #0a181f;
-            border-radius: 20px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 0.75rem;
-            text-align: center;
-        }
-        
-        .sound-info {
-            background: #0a181f;
-            border-radius: 25px;
-            padding: 12px;
-            margin-top: 12px;
-            font-size: 0.8rem;
-        }
-        
-        .debug-box {
-            background: #00000099;
-            padding: 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-family: monospace;
-            color: #88ff88;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 12px;
-        }
-        
-        .footer { margin-top: 12px; font-size: 0.65rem; text-align: center; color: #b0a88c; }
-        .manual-control { margin-top: 12px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .small-btn {
-            background: #2c4f5e;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        .unlock-banner {
-            background: #ff884d33;
-            border: 1px solid #ff884d;
-            padding: 12px;
-            border-radius: 30px;
-            text-align: center;
-            margin-top: 12px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .retry-btn {
-            background: #ff884d;
-            border: none;
-            color: #1e3a44;
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 8px;
-        }
-        .instruction-box {
-            background: #1e3a44aa;
-            padding: 12px;
-            border-radius: 20px;
-            margin-top: 12px;
-            font-size: 0.7rem;
-            text-align: left;
-        }
-        .instruction-box h4 { color: #ffbb77; margin-bottom: 8px; }
-        .instruction-box li { margin-left: 20px; margin-top: 4px; color: #ccddff; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Терминал оплаты</title>
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --green: #10b981;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --yellow: #fbbf24;
+    --gray: #94a3b8;
+    --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 20px 60px rgba(15, 23, 42, 0.25);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f1f5f9 50%, #ecfeff 100%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ---------- ГЛАВНЫЙ ЭКРАН / ПЕРЕКЛЮЧАТЕЛЬ РОЛЕЙ ---------- */
+  .app-container {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 600px;
+    position: relative;
+  }
+
+  .role-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--bg);
+    padding: 4px;
+    margin: 16px 16px 0;
+    border-radius: 12px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .role-switcher button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+  }
+
+  .role-switcher button.active {
+    background: var(--card);
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+
+  .panel {
+    display: none;
+    flex-direction: column;
+    padding: 20px;
+    flex: 1;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .panel.active { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- ОБЩИЕ ЭЛЕМЕНТЫ ---------- */
+  h1 { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
+
+  .btn {
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-success { background: linear-gradient(135deg, var(--green), #34d399); color: #fff; }
+  .btn-danger { background: linear-gradient(135deg, var(--red), #f87171); color: #fff; }
+  .btn-yellow { background: linear-gradient(135deg, var(--yellow), #f59e0b); color: #fff; }
+
+  .btn-ghost { background: var(--bg); color: var(--text-muted); }
+
+  .input-group { margin-bottom: 16px; }
+  .input-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  .input-group input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    transition: 0.2s;
+    text-align: center;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  .input-group input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+  }
+
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-badge.waiting { background: #f1f5f9; color: var(--text-muted); }
+  .status-badge.connected { background: #dcfce7; color: #15803d; }
+  .status-badge.pending { background: #fef3c7; color: #b45309; }
+  .status-badge.success { background: #d1fae5; color: #047857; }
+  .status-badge.error { background: #fee2e2; color: #b91c1c; }
+
+  .screen {
+    background: #0d1b2a;
+    border-radius: 16px;
+    padding: 24px;
+    color: #7CFC00;
+    font-family: 'Courier New', monospace;
+    border: 2px inset #444;
+    min-height: 120px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+  }
+  .screen .title { color: #4da6ff; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .screen .message { font-size: 18px; line-height: 1.4; word-break: break-word; }
+  .screen .amount { font-size: 32px; color: #FFD700; margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.5); font-weight: 800; }
+
+  /* ---------- ТЕРМИНАЛ / PIN ---------- */
+  .pin-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .pin-keypad button {
+    padding: 18px;
+    border: none;
+    border-radius: 14px;
+    background: var(--bg);
+    font-size: 24px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.15s;
+    font-family: 'Courier New', monospace;
+  }
+  .pin-keypad button:active { transform: scale(0.95); background: var(--border); }
+  .pin-keypad button.wide { grid-column: span 2; font-size: 16px; }
+
+  .pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; min-height: 24px; }
+  .pin-dots .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--primary); transition: 0.2s; }
+  .pin-dots .dot.filled { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+
+  /* ---------- АНИМАЦИИ ---------- */
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 4px solid rgba(99,102,241,0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result-icon { font-size: 64px; margin-bottom: 16px; animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+  .confetti-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 99; }
+  .confetti { position: absolute; width: 10px; height: 10px; top: -20px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(120vh) rotate(720deg); opacity: 0; } }
+
+  .terminal-id-display {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--primary);
+    letter-spacing: 4px;
+    font-family: 'Courier New', monospace;
+    background: #eef2ff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 2px dashed var(--primary-light);
+  }
+
+  .hidden { display: none !important; }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 9999;
+    opacity: 0;
+    transition: 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; bottom: 30px; }
+</style>
 </head>
-<body id="phoneBody">
-<div class="container">
-    <div class="phone-panel">
-        <div class="connection-badge checking" id="connectionBadge">🔄 ПРОВЕРКА ПОДКЛЮЧЕНИЯ...</div>
-        
-        <div class="signal-quality" id="signalQuality">
-            📡 Статус сети: <span id="networkStatus">проверка...</span>
-        </div>
-        
-        <div class="alarm-card" id="alarmCard">
-            <div class="alarm-status-icon" id="statusIcon">🟢</div>
-            <div class="alarm-status-text safe-mode" id="statusMainText">БЕЗОПАСНО</div>
-            <div id="statusSubText" style="color:#bbccdd;">Ожидание сигнала</div>
-        </div>
-        
-        <div class="sound-info">
-            <div>🎵 Звук тревоги: <span id="alarmSoundStatus" style="color:#ffaa77;">ожидание</span></div>
-            <div>✅ Звук отбоя: <span id="clearSoundStatus" style="color:#ffaa77;">ожидание</span></div>
-            <div id="playbackStatus" style="margin-top: 6px; color: #88ff88;">📻 Готов к приёму</div>
-        </div>
-        
-        <div class="unlock-banner" id="unlockBanner">
-            🔇 НАЖМИТЕ ДЛЯ РАЗБЛОКИРОВКИ ЗВУКА 🔇
-        </div>
-        
-        <div class="manual-control">
-            <button class="small-btn" id="stopTestBtn">⏹️ Остановить звук</button>
-            <button class="small-btn" id="retryConnectBtn">🔄 ПЕРЕПОДКЛЮЧИТЬСЯ</button>
-        </div>
-        
-        <div class="instruction-box">
-            <h4>📱 ИНСТРУКЦИЯ ДЛЯ БАБУШКИ:</h4>
-            <ul>
-                <li>1️⃣ Включите мобильный интернет или Wi-Fi</li>
-                <li>2️⃣ Если нет интернета - позвоните мне, я скажу что делать</li>
-                <li>3️⃣ Нажмите на ЖЁЛТУЮ полосу для включения звука</li>
-                <li>4️⃣ Если "нет интернета" - проверьте настройки телефона</li>
-                <li>5️⃣ Можно перезагрузить телефон - это часто помогает!</li>
-            </ul>
-        </div>
-        
-        <div class="debug-box" id="debugBox">
-            🔍 ЛОГ СОБЫТИЙ:<br>
-            ⏳ Запуск...
-        </div>
-        
-        <div class="footer">
-            📡 Для работы нужен интернет (Wi-Fi или мобильный)<br>
-            🔄 Если интернет пропал - система будет ждать восстановления<br>
-            💡 При проблемах: перезагрузите телефон и проверьте настройки сети
-        </div>
+<body>
+
+<div class="app-container" id="app">
+  <!-- Переключатель ролей -->
+  <div class="role-switcher">
+    <button id="roleCashier" class="active" onclick="switchRole('cashier')">💼 Касса</button>
+    <button id="roleTerminal" onclick="switchRole('terminal')">📟 Терминал</button>
+  </div>
+
+  <!-- ================= КАССА (ПК) ================= -->
+  <div class="panel active" id="panelCashier">
+    <h1>Касса</h1>
+    <div class="sub">Создайте терминал и отправляйте запросы на оплату</div>
+
+    <!-- Шаг 1: Создание терминала -->
+    <div id="cashierStep1">
+      <div class="input-group">
+        <label>ID терминала (4 цифры)</label>
+        <div class="terminal-id-display" id="cashierTerminalId">----</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="createTerminal()">✨ Создать терминал</button>
     </div>
+
+    <!-- Шаг 2: Ожидание терминала -->
+    <div id="cashierStep2" class="hidden">
+      <div class="status-badge waiting" id="cashierStatusBadge" style="margin-bottom:16px;">
+        <span>⏳</span> Ожидание подключения терминала
+      </div>
+      <div class="terminal-id-display" id="cashierTerminalIdDisplay">----</div>
+      <button class="btn btn-primary" style="width:100%;" onclick="requestPayment()" id="cashierRequestBtn">📤 Отправить запрос на терминал</button>
+      <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="resetCashier()">🔄 Сбросить</button>
+    </div>
+
+    <!-- Шаг 3: Ввод суммы -->
+    <div id="cashierStep3" class="hidden">
+      <div class="status-badge connected" style="margin-bottom:16px;">
+        <span>✅</span> Терминал подключён
+      </div>
+      <div class="input-group">
+        <label>Сумма к оплате (₽)</label>
+        <input type="number" id="cashierAmount" placeholder="0.00" min="1" step="0.01">
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="sendAmountToTerminal()" id="cashierSendAmountBtn">💳 Отправить на терминал</button>
+      <button class="btn btn-ghost" style="width:100%;margin-top:8px;" onclick="resetCashier()">❌ Отмена</button>
+    </div>
+
+    <!-- Шаг 4: Ожидание PIN от клиента -->
+    <div id="cashierStep4" class="hidden">
+      <div class="status-badge pending" style="margin-bottom:16px;">
+        <span>⏳</span> Ожидание PIN-кода клиента...
+      </div>
+      <div class="screen">
+        <div class="title">Сумма</div>
+        <div class="amount" id="cashierPendingAmount">0.00 ₽</div>
+        <div class="message" style="margin-top:12px;font-size:14px;">Клиент вводит PIN</div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;" onclick="resetCashier()">❌ Отменить</button>
+    </div>
+
+    <!-- Шаг 5: Результат -->
+    <div id="cashierStep5" class="hidden">
+      <div id="cashierResultContent"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="resetCashier()">🔄 Новая операция</button>
+    </div>
+  </div>
+
+  <!-- ================= ТЕРМИНАЛ (КЛИЕНТ) ================= -->
+  <div class="panel" id="panelTerminal">
+    <h1>Терминал</h1>
+    <div class="sub">Введите ID терминала для подключения</div>
+
+    <!-- Шаг 1: Подключение -->
+    <div id="terminalStep1">
+      <div class="input-group">
+        <label>ID терминала</label>
+        <input type="tel" id="terminalIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="connectToTerminal()">🔌 Подключиться</button>
+    </div>
+
+    <!-- Шаг 2: Ожидание подтверждения -->
+    <div id="terminalStep2" class="hidden">
+      <div class="status-badge waiting" style="margin-bottom:16px;">
+        <span>⏳</span> Подключение...
+      </div>
+      <div class="screen">
+        <div class="title">Ожидание</div>
+        <div class="message">Ожидание запроса от кассира</div>
+      </div>
+      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="confirmConnection()" id="terminalConfirmBtn">✅ Подтвердить подключение</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="resetTerminal()">❌ Отмена</button>
+    </div>
+
+    <!-- Шаг 3: Сумма получена -->
+    <div id="terminalStep3" class="hidden">
+      <div class="status-badge connected" style="margin-bottom:16px;">
+        <span>✅</span> Подключено
+      </div>
+      <div class="screen">
+        <div class="title">К оплате</div>
+        <div class="amount" id="terminalAmountDisplay">0.00 ₽</div>
+      </div>
+      <div class="input-group">
+        <label>Введите PIN-код (4 цифры)</label>
+        <div class="pin-dots" id="terminalPinDots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="pin-keypad" id="terminalPinPad"></div>
+      </div>
+      <button class="btn btn-success" style="width:100%;margin-bottom:8px;" onclick="submitPin()" id="terminalSubmitPinBtn" disabled>✅ Оплатить</button>
+      <button class="btn btn-danger" style="width:100%;" onclick="cancelTerminalPayment()">❌ Отказ</button>
+    </div>
+
+    <!-- Шаг 4: Обработка -->
+    <div id="terminalStep4" class="hidden">
+      <div class="loading-spinner"></div>
+      <div class="screen">
+        <div class="title">Обработка</div>
+        <div class="message">Связь с банком...</div>
+      </div>
+    </div>
+
+    <!-- Шаг 5: Результат -->
+    <div id="terminalStep5" class="hidden">
+      <div class="confetti-container" id="confettiContainer"></div>
+      <div id="terminalResultContent" style="text-align:center;"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:24px;" onclick="resetTerminal()">🔄 Новая операция</button>
+    </div>
+  </div>
 </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDbbkUV8yZd_i4g-6IJ_VPbQlh7uRp2kFg",
-        authDomain: "alarm-system-88f83.firebaseapp.com",
-        projectId: "alarm-system-88f83",
-        databaseURL: "https://alarm-system-88f83-default-rtdb.firebaseio.com",
-        storageBucket: "alarm-system-88f83.firebasestorage.app",
-        messagingSenderId: "604735738788",
-        appId: "1:604735738788:web:dc1a964f8e4692cbfa6731"
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase, ref, onValue, set, update, remove, onDisconnect, get, child
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ==================== FIREBASE ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
+  authDomain: "bk-cashier.firebaseapp.com",
+  databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "bk-cashier",
+  storageBucket: "bk-cashier.firebasestorage.app",
+  messagingSenderId: "385000840969",
+  appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const TERMINALS_PATH = 'payment_terminals';
+
+// ==================== СОСТОЯНИЕ ====================
+let state = {
+  role: 'cashier', // cashier | terminal
+  terminalId: null, // ID текущего терминала (для кассы)
+  connectedTerminalId: null, // ID терминала, к которому подключён клиент
+  pin: '',
+  pinLength: 4,
+  unsubscribe: null, // функция отписки от текущего терминала
+  cashierUnsubscribe: null,
+};
+
+const CORRECT_PIN = '1111';
+
+// ==================== УТИЛИТЫ ====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function generateTerminalId() {
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+function switchRole(role) {
+  state.role = role;
+  document.getElementById('roleCashier').classList.toggle('active', role === 'cashier');
+  document.getElementById('roleTerminal').classList.toggle('active', role === 'terminal');
+  document.getElementById('panelCashier').classList.toggle('active', role === 'cashier');
+  document.getElementById('panelTerminal').classList.toggle('active', role === 'terminal');
+
+  // При смене роли сбрасываем незавершённые операции
+  if (role === 'cashier') {
+    if (state.cashierUnsubscribe) { state.cashierUnsubscribe(); state.cashierUnsubscribe = null; }
+    if (state.unsubscribe) { state.unsubscribe(); state.unsubscribe = null; }
+    resetCashier();
+  } else {
+    if (state.cashierUnsubscribe) { state.cashierUnsubscribe(); state.cashierUnsubscribe = null; }
+    if (state.unsubscribe) { state.unsubscribe(); state.unsubscribe = null; }
+    resetTerminal();
+  }
+}
+
+// ==================== КАССА ====================
+function resetCashier() {
+  if (state.cashierUnsubscribe) {
+    state.cashierUnsubscribe();
+    state.cashierUnsubscribe = null;
+  }
+  state.terminalId = null;
+  document.getElementById('cashierStep1').classList.remove('hidden');
+  document.getElementById('cashierStep2').classList.add('hidden');
+  document.getElementById('cashierStep3').classList.add('hidden');
+  document.getElementById('cashierStep4').classList.add('hidden');
+  document.getElementById('cashierStep5').classList.add('hidden');
+  document.getElementById('cashierTerminalId').textContent = '----';
+  document.getElementById('cashierAmount').value = '';
+}
+
+async function createTerminal() {
+  const id = generateTerminalId();
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
+
+  try {
+    await set(terminalRef, {
+      status: 'waiting_connection',
+      amount: 0,
+      pin: null,
+      result: null,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+
+    // Регистрируем "уборку" при разрыве соединения
+    onDisconnect(terminalRef).remove();
+
+    state.terminalId = id;
+
+    // Сохраняем ID для текущей сессии (можно в localStorage, если нужно)
+    localStorage.setItem('current_terminal_id', id);
+
+    document.getElementById('cashierTerminalId').textContent = id;
+    document.getElementById('cashierTerminalIdDisplay').textContent = id;
+
+    document.getElementById('cashierStep1').classList.add('hidden');
+    document.getElementById('cashierStep2').classList.remove('hidden');
+
+    // Подписываемся на изменения
+    subscribeToTerminalFromCashier(id);
+
+    showToast(`Терминал ${id} создан`);
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка создания терминала: ' + err.message);
+  }
+}
+
+function subscribeToTerminalFromCashier(id) {
+  if (state.cashierUnsubscribe) state.cashierUnsubscribe();
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
+
+  state.cashierUnsubscribe = onValue(terminalRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      // Терминал удалён
+      showToast('Терминал отключён');
+      resetCashier();
+      return;
+    }
+    updateCashierUI(data);
+  }, (err) => {
+    console.error('Cashier subscription error:', err);
+  });
+}
+
+function updateCashierUI(data) {
+  const status = data.status;
+
+  // Обновляем бейдж
+  const badge = document.getElementById('cashierStatusBadge');
+
+  if (status === 'waiting_connection') {
+    badge.className = 'status-badge waiting';
+    badge.innerHTML = '<span>⏳</span> Ожидание подключения терминала';
+    document.getElementById('cashierStep2').classList.remove('hidden');
+    document.getElementById('cashierStep3').classList.add('hidden');
+    document.getElementById('cashierStep4').classList.add('hidden');
+    document.getElementById('cashierStep5').classList.add('hidden');
+  } else if (status === 'pending_connection') {
+    badge.className = 'status-badge pending';
+    badge.innerHTML = '<span>⏳</span> Клиент подключается...';
+    document.getElementById('cashierStep2').classList.remove('hidden');
+    document.getElementById('cashierStep3').classList.add('hidden');
+    document.getElementById('cashierStep4').classList.add('hidden');
+    document.getElementById('cashierStep5').classList.add('hidden');
+  } else if (status === 'connected') {
+    badge.className = 'status-badge connected';
+    badge.innerHTML = '<span>✅</span> Терминал подключён';
+    document.getElementById('cashierStep2').classList.add('hidden');
+    document.getElementById('cashierStep3').classList.remove('hidden');
+    document.getElementById('cashierStep4').classList.add('hidden');
+    document.getElementById('cashierStep5').classList.add('hidden');
+  } else if (status === 'waiting_pin') {
+    document.getElementById('cashierStep3').classList.add('hidden');
+    document.getElementById('cashierStep4').classList.remove('hidden');
+    document.getElementById('cashierPendingAmount').textContent = (data.amount || 0).toFixed(2) + ' ₽';
+  } else if (status === 'success' || status === 'fail') {
+    document.getElementById('cashierStep3').classList.add('hidden');
+    document.getElementById('cashierStep4').classList.add('hidden');
+    document.getElementById('cashierStep5').classList.remove('hidden');
+
+    const content = document.getElementById('cashierResultContent');
+    if (status === 'success') {
+      content.innerHTML = `
+        <div class="result-icon">✅</div>
+        <h2 style="text-align:center;color:var(--green);margin-bottom:8px;">Успешно</h2>
+        <div style="text-align:center;font-size:18px;font-weight:700;color:var(--text);">
+          Оплата ${(data.amount || 0).toFixed(2)} ₽
+        </div>
+        <div style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:8px;">
+          PIN подтверждён
+        </div>
+      `;
+      // Конфетти
+      spawnConfetti();
+    } else {
+      content.innerHTML = `
+        <div class="result-icon">❌</div>
+        <h2 style="text-align:center;color:var(--red);margin-bottom:8px;">Отказ</h2>
+        <div style="text-align:center;font-size:14px;color:var(--text-muted);">
+          ${data.failReason === 'wrong_pin' ? 'Неверный PIN-код' : 'Операция отклонена'}
+        </div>
+      `;
+    }
+  }
+}
+
+async function requestPayment() {
+  if (!state.terminalId) return;
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.terminalId}`);
+  try {
+    await update(terminalRef, {
+      status: 'request_sent',
+      updatedAt: Date.now()
+    });
+    showToast('Запрос отправлен на терминал');
+    document.getElementById('cashierRequestBtn').disabled = true;
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка: ' + err.message);
+  }
+}
+
+async function sendAmountToTerminal() {
+  const amount = parseFloat(document.getElementById('cashierAmount').value);
+  if (!amount || amount <= 0) {
+    showToast('Введите корректную сумму');
+    return;
+  }
+  if (!state.terminalId) return;
+
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.terminalId}`);
+  try {
+    await update(terminalRef, {
+      status: 'waiting_pin',
+      amount: amount,
+      updatedAt: Date.now()
+    });
+    showToast(`Сумма ${amount.toFixed(2)} ₽ отправлена`);
+    document.getElementById('cashierSendAmountBtn').disabled = true;
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка: ' + err.message);
+  }
+}
+
+// ==================== ТЕРМИНАЛ ====================
+function resetTerminal() {
+  if (state.unsubscribe) {
+    state.unsubscribe();
+    state.unsubscribe = null;
+  }
+  state.connectedTerminalId = null;
+  state.pin = '';
+
+  document.getElementById('terminalStep1').classList.remove('hidden');
+  document.getElementById('terminalStep2').classList.add('hidden');
+  document.getElementById('terminalStep3').classList.add('hidden');
+  document.getElementById('terminalStep4').classList.add('hidden');
+  document.getElementById('terminalStep5').classList.add('hidden');
+  document.getElementById('terminalIdInput').value = '';
+  document.getElementById('terminalConfirmBtn').disabled = false;
+  updatePinDots();
+  buildPinPad();
+}
+
+async function connectToTerminal() {
+  const id = document.getElementById('terminalIdInput').value.trim();
+  if (id.length !== 4) {
+    showToast('Введите 4-значный ID терминала');
+    return;
+  }
+
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
+  try {
+    const snapshot = await get(terminalRef);
+    if (!snapshot.exists()) {
+      showToast('Терминал не найден');
+      return;
+    }
+
+    const data = snapshot.val();
+    if (data.status !== 'waiting_connection' && data.status !== 'request_sent') {
+      showToast('Терминал занят');
+      return;
+    }
+
+    state.connectedTerminalId = id;
+
+    // Отправляем запрос на подключение
+    await update(terminalRef, {
+      status: 'pending_connection',
+      clientConnectedAt: Date.now(),
+      updatedAt: Date.now()
+    });
+
+    document.getElementById('terminalStep1').classList.add('hidden');
+    document.getElementById('terminalStep2').classList.remove('hidden');
+
+    // Подписываемся
+    subscribeToTerminalFromTerminal(id);
+
+    showToast('Запрос на подключение отправлен');
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка: ' + err.message);
+  }
+}
+
+function subscribeToTerminalFromTerminal(id) {
+  if (state.unsubscribe) state.unsubscribe();
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${id}`);
+
+  state.unsubscribe = onValue(terminalRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      // Терминал удалён
+      showToast('Терминал отключён');
+      resetTerminal();
+      return;
+    }
+    updateTerminalUI(data);
+  }, (err) => {
+    console.error('Terminal subscription error:', err);
+  });
+}
+
+function updateTerminalUI(data) {
+  const status = data.status;
+
+  if (status === 'pending_connection') {
+    document.getElementById('terminalStep2').classList.remove('hidden');
+    document.getElementById('terminalConfirmBtn').disabled = false;
+  } else if (status === 'request_sent') {
+    // Если касса прислала запрос до нашего подтверждения — покажем, что можно подключаться
+    document.getElementById('terminalStep2').classList.remove('hidden');
+  } else if (status === 'connected') {
+    document.getElementById('terminalStep2').classList.add('hidden');
+    document.getElementById('terminalStep3').classList.add('hidden');
+    showToast('Соединение установлено');
+  } else if (status === 'waiting_pin') {
+    document.getElementById('terminalStep2').classList.add('hidden');
+    document.getElementById('terminalStep3').classList.remove('hidden');
+    document.getElementById('terminalAmountDisplay').textContent = (data.amount || 0).toFixed(2) + ' ₽';
+    state.pin = '';
+    updatePinDots();
+    buildPinPad();
+  } else if (status === 'success' || status === 'fail') {
+    document.getElementById('terminalStep3').classList.add('hidden');
+    document.getElementById('terminalStep4').classList.add('hidden');
+    document.getElementById('terminalStep5').classList.remove('hidden');
+
+    const content = document.getElementById('terminalResultContent');
+    if (status === 'success') {
+      content.innerHTML = `
+        <div class="result-icon">✅</div>
+        <h2 style="color:var(--green);margin-bottom:8px;">Успешно</h2>
+        <div style="font-size:18px;font-weight:700;color:var(--text);">
+          Оплата ${(data.amount || 0).toFixed(2)} ₽
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:8px;">
+          Спасибо за покупку!
+        </div>
+      `;
+      spawnConfetti();
+    } else {
+      content.innerHTML = `
+        <div class="result-icon">❌</div>
+        <h2 style="color:var(--red);margin-bottom:8px;">Отказ</h2>
+        <div style="font-size:14px;color:var(--text-muted);">
+          ${data.failReason === 'wrong_pin' ? 'Неверный PIN-код' : 'Операция отклонена'}
+        </div>
+      `;
+    }
+  }
+}
+
+async function confirmConnection() {
+  if (!state.connectedTerminalId) return;
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.connectedTerminalId}`);
+  try {
+    await update(terminalRef, {
+      status: 'connected',
+      updatedAt: Date.now()
+    });
+    document.getElementById('terminalConfirmBtn').disabled = true;
+    showToast('Соединение установлено');
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка: ' + err.message);
+  }
+}
+
+// ==================== PIN-КЛАВИАТУРА ====================
+function buildPinPad() {
+  const pad = document.getElementById('terminalPinPad');
+  if (!pad) return;
+  pad.innerHTML = '';
+
+  const buttons = [
+    { key: '1' }, { key: '2' }, { key: '3' },
+    { key: '4' }, { key: '5' }, { key: '6' },
+    { key: '7' }, { key: '8' }, { key: '9' },
+    { key: 'C', class: 'wide', action: 'clear' }, { key: '0' }, { key: '⌫', action: 'back' }
+  ];
+
+  buttons.forEach(b => {
+    const btn = document.createElement('button');
+    btn.textContent = b.key;
+    if (b.class) btn.className = b.class;
+    btn.onclick = () => {
+      if (b.action === 'clear') {
+        state.pin = '';
+      } else if (b.action === 'back') {
+        state.pin = state.pin.slice(0, -1);
+      } else if (state.pin.length < state.pinLength) {
+        state.pin += b.key;
+      }
+      updatePinDots();
     };
-    
-    let database;
-    let isAlarmActive = false;
-    let currentAlarmAudio = null;
-    let alarmSoundData = null;
-    let clearSoundData = null;
-    let audioUnlocked = false;
-    let reconnectAttempts = 0;
-    let reconnectInterval = null;
-    
-    function addLog(msg, isError = false) {
-        const debugBox = document.getElementById('debugBox');
-        const time = new Date().toLocaleTimeString();
-        const prefix = isError ? '❌' : '✅';
-        debugBox.innerHTML += `<br>⏰ ${time} - ${prefix} ${msg}`;
-        debugBox.scrollTop = debugBox.scrollHeight;
-        console.log(msg);
-        
-        // Ограничиваем количество строк в логе
-        const lines = debugBox.innerHTML.split('<br>');
-        if (lines.length > 50) {
-            debugBox.innerHTML = lines.slice(-45).join('<br>');
-        }
+    pad.appendChild(btn);
+  });
+  updatePinDots();
+}
+
+function updatePinDots() {
+  const dots = document.querySelectorAll('#terminalPinDots .dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('filled', i < state.pin.length);
+  });
+  const submitBtn = document.getElementById('terminalSubmitPinBtn');
+  if (submitBtn) submitBtn.disabled = state.pin.length !== state.pinLength;
+}
+
+async function submitPin() {
+  if (!state.connectedTerminalId) return;
+  if (state.pin.length !== state.pinLength) return;
+
+  // Скрываем клавиатуру и показываем анимацию
+  document.getElementById('terminalStep3').classList.add('hidden');
+  document.getElementById('terminalStep4').classList.remove('hidden');
+
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.connectedTerminalId}`);
+  const isCorrect = state.pin === CORRECT_PIN;
+
+  try {
+    // Небольшая задержка для анимации "связь с банком"
+    await new Promise(r => setTimeout(r, 2000));
+
+    if (isCorrect) {
+      await update(terminalRef, {
+        status: 'success',
+        result: 'success',
+        updatedAt: Date.now()
+      });
+    } else {
+      await update(terminalRef, {
+        status: 'fail',
+        result: 'fail',
+        failReason: 'wrong_pin',
+        updatedAt: Date.now()
+      });
     }
-    
-    function checkNetworkStatus() {
-        const networkStatusSpan = document.getElementById('networkStatus');
-        
-        if (navigator.onLine) {
-            networkStatusSpan.innerHTML = '✅ Интернет ЕСТЬ';
-            networkStatusSpan.style.color = '#88ff88';
-            return true;
-        } else {
-            networkStatusSpan.innerHTML = '❌ ИНТЕРНЕТА НЕТ! Проверьте Wi-Fi или мобильные данные';
-            networkStatusSpan.style.color = '#ff8888';
-            return false;
-        }
-    }
-    
-    function updateConnectionBadge(isConnected, isChecking = false) {
-        const badge = document.getElementById('connectionBadge');
-        if (isChecking) {
-            badge.innerHTML = '🔄 ПРОВЕРКА ПОДКЛЮЧЕНИЯ...';
-            badge.className = 'connection-badge checking';
-        } else if (isConnected) {
-            badge.innerHTML = '✅ ПОДКЛЮЧЕНО К ОБЛАКУ! Сигнал идёт';
-            badge.className = 'connection-badge online';
-        } else {
-            badge.innerHTML = '❌ НЕТ ИНТЕРНЕТА! Проверьте настройки телефона';
-            badge.className = 'connection-badge offline';
-        }
-    }
-    
-    function startReconnectTimer() {
-        if (reconnectInterval) clearInterval(reconnectInterval);
-        
-        reconnectInterval = setInterval(() => {
-            if (!navigator.onLine) {
-                addLog("🔄 Нет интернета, пытаемся восстановить...", true);
-                checkNetworkStatus();
-            } else if (!database) {
-                addLog("🔄 Пытаемся переподключиться к Firebase...");
-                initFirebase();
-            }
-        }, 30000); // каждые 30 секунд
-    }
-    
-    function initFirebase() {
-        updateConnectionBadge(false, true);
-        
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-                addLog("✅ Firebase инициализирован");
-            }
-            database = firebase.database();
-            
-            const connectedRef = database.ref(".info/connected");
-            connectedRef.on("value", (snap) => {
-                const isConnected = snap.val() === true;
-                
-                if (isConnected) {
-                    addLog("✅ ПОДКЛЮЧЕНО К FIREBASE CLOUD!");
-                    updateConnectionBadge(true, false);
-                    reconnectAttempts = 0;
-                    
-                    // После подключения запускаем слушатели
-                    setupListeners();
-                } else {
-                    addLog("❌ НЕТ ПОДКЛЮЧЕНИЯ К FIREBASE!", true);
-                    updateConnectionBadge(false, false);
-                }
-            });
-            
-            return true;
-        } catch (error) {
-            addLog(`❌ Ошибка Firebase: ${error.message}`, true);
-            updateConnectionBadge(false, false);
-            return false;
-        }
-    }
-    
-    let listenersSetup = false;
-    
-    function setupListeners() {
-        if (listenersSetup) return;
-        listenersSetup = true;
-        
-        addLog("👂 Настройка прослушивания команд...");
-        
-        // Слушаем команды
-        const commandsRef = database.ref('commands');
-        commandsRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.type) {
-                addLog(`📨 ПОЛУЧЕНА КОМАНДА: ${data.type.toUpperCase()}!`);
-                if (data.type === 'alarm') {
-                    activatePhoneAlarm();
-                } else if (data.type === 'clear') {
-                    deactivatePhoneAlarm();
-                }
-            }
-        });
-        
-        // Слушаем звуки
-        database.ref('sounds/alarm').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.data) {
-                alarmSoundData = data.data;
-                document.getElementById('alarmSoundStatus').innerHTML = data.name;
-                document.getElementById('alarmSoundStatus').style.color = '#88ff88';
-                addLog(`📥 ПОЛУЧЕН ЗВУК ТРЕВОГИ: ${data.name}`);
-                
-                if (isAlarmActive) {
-                    stopAlarm();
-                    startAlarmLoop();
-                }
-            }
-        });
-        
-        database.ref('sounds/clear').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.data) {
-                clearSoundData = data.data;
-                document.getElementById('clearSoundStatus').innerHTML = data.name;
-                document.getElementById('clearSoundStatus').style.color = '#88ff88';
-                addLog(`📥 ПОЛУЧЕН ЗВУК ОТБОЯ: ${data.name}`);
-            }
-        });
-        
-        database.ref('alarmState').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.active !== undefined) {
-                if (data.active && !isAlarmActive) {
-                    activatePhoneAlarm();
-                } else if (!data.active && isAlarmActive) {
-                    deactivatePhoneAlarm();
-                }
-            }
-        });
-        
-        addLog("✅ Все слушатели настроены! Ждём сигналы...");
-    }
-    
-    function unlockAudio() {
-        if (audioUnlocked) return;
-        
-        addLog("🔊 Разблокировка аудио...");
-        const silentAudio = new Audio();
-        silentAudio.volume = 0;
-        
-        const playPromise = silentAudio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                audioUnlocked = true;
-                addLog("✅ АУДИО РАЗБЛОКИРОВАНО!");
-                document.getElementById('unlockBanner').innerHTML = '🔊 ЗВУК РАЗБЛОКИРОВАН! 🔊';
-                document.getElementById('unlockBanner').style.background = '#2ecc7133';
-                document.getElementById('unlockBanner').style.borderColor = '#2ecc71';
-                silentAudio.pause();
-                silentAudio.currentTime = 0;
-            }).catch((error) => {
-                addLog(`❌ Ошибка разблокировки: ${error.message}`, true);
-            });
-        }
-    }
-    
-    function stopAlarm() {
-        if (currentAlarmAudio) {
-            currentAlarmAudio.pause();
-            currentAlarmAudio = null;
-            addLog("⏹️ Звук остановлен");
-        }
-    }
-    
-    function startAlarmLoop() {
-        if (!alarmSoundData) {
-            addLog("⚠️ Нет звука тревоги!", true);
-            document.getElementById('playbackStatus').innerHTML = '⚠️ Нет звука тревоги';
-            return;
-        }
-        
-        if (!audioUnlocked) {
-            addLog("⚠️ Сначала разблокируйте звук!", true);
-            document.getElementById('playbackStatus').innerHTML = '⚠️ Нажмите на жёлтую полосу';
-            return;
-        }
-        
-        stopAlarm();
-        
-        const audio = new Audio(alarmSoundData);
-        audio.loop = true;
-        audio.play().then(() => {
-            addLog("🚨 ТРЕВОГА! Звук играет циклически");
-            document.getElementById('playbackStatus').innerHTML = '🚨 ТРЕВОГА! Звук играет...';
-        }).catch(e => {
-            addLog(`❌ Ошибка: ${e.message}`, true);
-        });
-        currentAlarmAudio = audio;
-    }
-    
-    async function playClearTwice() {
-        if (!clearSoundData) {
-            addLog("⚠️ Нет звука отбоя!", true);
-            return;
-        }
-        
-        if (!audioUnlocked) {
-            addLog("⚠️ Сначала разблокируйте звук!", true);
-            return;
-        }
-        
-        addLog("🔔 Отбой! Воспроизведение 2 раза");
-        document.getElementById('playbackStatus').innerHTML = '🔔 Отбой! 2 раза...';
-        
-        for (let i = 0; i < 2; i++) {
-            const audio = new Audio(clearSoundData);
-            await new Promise((resolve) => {
-                audio.play().then(() => {
-                    addLog(`✅ Отбой часть ${i+1}/2`);
-                }).catch(e => addLog(`❌ Ошибка: ${e.message}`, true));
-                audio.onended = () => resolve();
-                setTimeout(() => resolve(), 5000);
-            });
-            if (i === 0) await new Promise(r => setTimeout(r, 400));
-        }
-        
-        addLog("✅ Отбой завершён");
-        if (!isAlarmActive) {
-            document.getElementById('playbackStatus').innerHTML = '✅ Готов к приёму';
-        }
-    }
-    
-    function updateUI(active) {
-        const body = document.getElementById('phoneBody');
-        const icon = document.getElementById('statusIcon');
-        const mainText = document.getElementById('statusMainText');
-        const subText = document.getElementById('statusSubText');
-        const alarmCard = document.getElementById('alarmCard');
-        
-        if (active) {
-            body.classList.add('alarm-active-bg');
-            icon.innerHTML = '🚨🔴🚨';
-            mainText.innerHTML = 'ТРЕВОГА!';
-            mainText.className = 'alarm-status-text alarm-mode';
-            subText.innerHTML = '⚠️ УКРОЙТЕСЬ! ⚠️';
-            alarmCard.style.background = '#4a0000cc';
-        } else {
-            body.classList.remove('alarm-active-bg');
-            icon.innerHTML = '🟢';
-            mainText.innerHTML = 'БЕЗОПАСНО';
-            mainText.className = 'alarm-status-text safe-mode';
-            subText.innerHTML = 'Ожидание сигнала';
-            alarmCard.style.background = '#031016';
-        }
-    }
-    
-    function activatePhoneAlarm() {
-        if (isAlarmActive) return;
-        isAlarmActive = true;
-        updateUI(true);
-        startAlarmLoop();
-        addLog("🔴 ТРЕВОГА ПОЛУЧЕНА!");
-    }
-    
-    async function deactivatePhoneAlarm() {
-        if (!isAlarmActive) return;
-        isAlarmActive = false;
-        stopAlarm();
-        updateUI(false);
-        await playClearTwice();
-        addLog("✅ ОТБОЙ ПОЛУЧЕН!");
-    }
-    
-    function manualReconnect() {
-        addLog("🔄 Ручное переподключение...");
-        listenersSetup = false;
-        database = null;
-        
-        try {
-            if (firebase.apps.length) {
-                // Не удаляем приложение, просто пересоздаём подключение
-                addLog("🔄 Переинициализация подключения...");
-            }
-            initFirebase();
-        } catch (e) {
-            addLog(`❌ Ошибка: ${e.message}`, true);
-        }
-    }
-    
-    // Следим за статусом интернета
-    window.addEventListener('online', () => {
-        addLog("🌐 Интернет появился! Переподключаемся...");
-        checkNetworkStatus();
-        manualReconnect();
+  } catch (err) {
+    console.error(err);
+    showToast('Ошибка: ' + err.message);
+    document.getElementById('terminalStep4').classList.add('hidden');
+    document.getElementById('terminalStep3').classList.remove('hidden');
+  }
+}
+
+async function cancelTerminalPayment() {
+  if (!state.connectedTerminalId) return;
+  const terminalRef = ref(db, `${TERMINALS_PATH}/${state.connectedTerminalId}`);
+  try {
+    await update(terminalRef, {
+      status: 'fail',
+      result: 'fail',
+      failReason: 'cancelled',
+      updatedAt: Date.now()
     });
-    
-    window.addEventListener('offline', () => {
-        addLog("⚠️ Интернет пропал! Ждём восстановления...", true);
-        checkNetworkStatus();
-        updateConnectionBadge(false, false);
-    });
-    
-    // Кнопки
-    document.getElementById('stopTestBtn').addEventListener('click', () => {
-        if (currentAlarmAudio) {
-            stopAlarm();
-            addLog("⏹️ Звук остановлен вручную");
-        }
-    });
-    
-    document.getElementById('retryConnectBtn').addEventListener('click', () => {
-        manualReconnect();
-    });
-    
-    document.getElementById('unlockBanner').addEventListener('click', () => {
-        unlockAudio();
-    });
-    
-    document.body.addEventListener('click', () => {
-        if (!audioUnlocked) unlockAudio();
-    });
-    
-    // Запуск
-    checkNetworkStatus();
-    initFirebase();
-    startReconnectTimer();
-    
-    addLog("📱 ТЕЛЕФОН ГОТОВ К ПРИЁМУ");
-    addLog("💡 Если нет интернета - проверьте настройки телефона");
-    addLog("💡 Можно перезагрузить телефон - это часто помогает!");
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// ==================== КОНФЕТТИ ====================
+function spawnConfetti() {
+  const container = document.getElementById('confettiContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  const colors = ['#fbbf24', '#10b981', '#4da6ff', '#ef4444', '#ff6b00', '#fff', '#a855f7'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + '%';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    c.style.animationDelay = Math.random() * 0.5 + 's';
+    c.style.width = (Math.random() * 8 + 6) + 'px';
+    c.style.height = (Math.random() * 8 + 6) + 'px';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(c);
+    setTimeout(() => c.remove(), 4500);
+  }
+}
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+window.switchRole = switchRole;
+window.createTerminal = createTerminal;
+window.requestPayment = requestPayment;
+window.sendAmountToTerminal = sendAmountToTerminal;
+window.resetCashier = resetCashier;
+window.connectToTerminal = connectToTerminal;
+window.confirmConnection = confirmConnection;
+window.submitPin = submitPin;
+window.cancelTerminalPayment = cancelTerminalPayment;
+window.resetTerminal = resetTerminal;
+
+// Ограничим ввод ID только цифрами
+document.getElementById('terminalIdInput').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+});
+
+// Начинаем с кассы
+switchRole('cashier');
+
 </script>
 </body>
 </html>
