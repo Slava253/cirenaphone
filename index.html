@@ -22,7 +22,6 @@
   .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
   .status-pill.wait { background: #fef3c7; color: #b45309; }
   .status-pill.ok { background: #dcfce7; color: #15803d; }
-  .status-pill.err { background: #fee2e2; color: #b91c1c; }
   .id-big { text-align: center; font-size: 42px; font-weight: 900; letter-spacing: 8px; font-family: 'Courier New', monospace; background: #eef2ff; color: #4f46e5; padding: 20px; border-radius: 14px; border: 2px dashed #818cf8; margin-bottom: 16px; }
   .screen { background: #0d1b2a; color: #7CFC00; font-family: 'Courier New', monospace; padding: 24px; border-radius: 14px; text-align: center; margin-bottom: 16px; min-height: 120px; }
   .screen .label { color: #4da6ff; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
@@ -39,7 +38,6 @@
   #cashierApp { max-width: 1200px; margin: 0 auto; padding: 16px; }
   .cashier-header { background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   .cashier-header h1 { font-size: 20px; }
-  .cashier-header .info { font-size: 12px; opacity: 0.8; }
   .terminal-bar { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
   .terminal-bar.wait { background: #fef3c7; color: #92400e; }
   .terminal-bar.ok { background: #dcfce7; color: #15803d; }
@@ -51,7 +49,6 @@
   .cashier-panel h3 { font-size: 17px; margin-bottom: 12px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
   .row > * { flex: 1; min-width: 120px; }
-  .row .flex-2 { flex: 2; }
   input, select { padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; background: #fff; color: #1e293b; width: 100%; }
   input:focus, select:focus { border-color: #6366f1; }
   .cashier-btn { padding: 10px 18px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
@@ -64,19 +61,20 @@
   th { background: #f1f5f9; padding: 10px; text-align: left; color: #475569; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
   td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
   .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 12px; }
-  .product-card { padding: 12px; background: #f8fafc; border-radius: 10px; cursor: pointer; transition: 0.15s; border: 2px solid transparent; }
-  .product-card:hover { border-color: #6366f1; background: #eef2ff; }
+  .product-card { padding: 12px; background: #f8fafc; border-radius: 10px; border: 2px solid transparent; }
   .product-card .name { font-weight: 700; margin-bottom: 4px; }
   .product-card .price { color: #10b981; font-weight: 700; font-family: 'Courier New', monospace; }
   .product-card .barcode { font-size: 11px; color: #94a3b8; font-family: monospace; }
   .total-box { text-align: right; font-size: 24px; font-weight: 900; color: #6366f1; margin-top: 12px; }
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 999; padding: 20px; }
   .modal.show { display: flex; }
-  .modal-box { background: #fff; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal-box { background: #fff; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; }
   .modal-box h3 { font-size: 18px; margin-bottom: 16px; text-align: center; }
-  .modal-box .method-row { display: flex; gap: 10px; margin-bottom: 16px; }
-  .modal-box .method { flex: 1; padding: 16px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; text-align: center; font-weight: 700; background: #fff; }
-  .modal-box .method.active { border-color: #6366f1; background: #eef2ff; color: #4f46e5; }
+  .modal-label { font-size: 13px; font-weight: 700; margin-bottom: 6px; display: block; color: #475569; }
+  .cancel-summary { background: #f1f5f9; padding: 12px; border-radius: 10px; margin-bottom: 16px; text-align: center; }
+  .cancel-summary .lbl { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+  .cancel-summary .amt { font-size: 26px; font-weight: 900; color: #ef4444; }
+  .cancel-item-info { font-size: 12px; color: #64748b; margin-top: 6px; text-align: center; }
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; z-index: 10000; opacity: 0; transition: 0.3s; pointer-events: none; max-width: 90vw; text-align: center; }
   .toast.show { opacity: 1; }
 </style>
@@ -89,13 +87,11 @@
     <h1>📟 Терминал</h1>
     <div class="sub" id="termSubtitle">Создайте терминал и сообщите ID кассиру</div>
 
-    <!-- Шаг 1: создать / восстановить -->
     <div id="tStep1">
       <button class="btn btn-primary" onclick="termCreate()">✨ Создать терминал</button>
       <button class="btn btn-ghost" id="tRestoreBtn" onclick="termRestore()" style="display:none;">🔁 Восстановить терминал</button>
     </div>
 
-    <!-- Шаг 2: ждём кассу -->
     <div id="tStep2" class="hidden">
       <div class="status-pill wait">⏳ Ожидание кассы</div>
       <div class="id-big" id="tIdDisplay">----</div>
@@ -103,7 +99,6 @@
       <button class="btn btn-ghost" onclick="termNewId()">🔄 Создать новый ID</button>
     </div>
 
-    <!-- Шаг 3: касса подключается -->
     <div id="tStep3" class="hidden">
       <div class="status-pill wait">⏳ Касса подключается...</div>
       <div class="screen"><div class="label">Запрос</div><div class="msg">Касса хочет подключиться</div></div>
@@ -111,14 +106,12 @@
       <button class="btn btn-ghost" onclick="termNewOperation()">❌ Отмена</button>
     </div>
 
-    <!-- Шаг 4: подключено, ждём сумму -->
     <div id="tStep4" class="hidden">
       <div class="status-pill ok">✅ Касса подключена</div>
       <div class="screen"><div class="label">Готов к оплате</div><div class="msg">Ожидание суммы от кассира...</div></div>
       <button class="btn btn-ghost" onclick="termNewOperation()">❌ Отмена</button>
     </div>
 
-    <!-- Шаг 5: ввод PIN -->
     <div id="tStep5" class="hidden">
       <div class="status-pill ok">✅ Касса подключена</div>
       <div class="screen"><div class="label">К оплате</div><div class="val" id="tAmount">0.00 ₽</div></div>
@@ -130,12 +123,10 @@
       <button class="btn btn-danger" onclick="termCancel()">❌ Отказ</button>
     </div>
 
-    <!-- Шаг 6: обработка -->
     <div id="tStep6" class="hidden">
       <div class="screen"><div class="label">Обработка</div><div class="msg">Связь с банком...</div></div>
     </div>
 
-    <!-- Шаг 7: результат -->
     <div id="tStep7" class="hidden">
       <div id="tResult"></div>
       <button class="btn btn-primary" onclick="termNewOperation()" style="margin-top:16px;">🔄 Новая операция</button>
@@ -146,7 +137,7 @@
 <!-- ================= КАССА ================= -->
 <div id="cashierApp" class="hidden">
   <div class="cashier-header">
-    <div><h1>💼 Касса</h1><div class="info" id="cashierInfo">—</div></div>
+    <div><h1>💼 Касса</h1></div>
     <div class="terminal-bar wait" id="termBar">📟 Терминал не настроен</div>
   </div>
 
@@ -156,7 +147,6 @@
     <button class="cashier-tab" data-tab="terminal" onclick="switchCashierTab('terminal')">📟 Терминал</button>
   </div>
 
-  <!-- Продажа -->
   <div id="tab-sale">
     <div class="cashier-panel">
       <h3>🛒 Корзина</h3>
@@ -172,10 +162,13 @@
     <div class="cashier-panel">
       <h3>➕ Добавить товар</h3>
       <div class="row">
-        <input type="text" id="barcodeInput" placeholder="Штрихкод или название" onkeydown="if(event.key==='Enter')addByBarcode()">
+        <input type="text" id="barcodeInput" placeholder="Штрихкод / название / VXOD-ADMIN23472203" onkeydown="if(event.key==='Enter')addByBarcode()">
         <input type="number" id="qtyInput" value="1" min="1" style="max-width:100px;">
         <button class="cashier-btn primary" onclick="addByBarcode()">Добавить</button>
         <button class="cashier-btn ghost" onclick="clearCart()">Очистить</button>
+      </div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:8px;">
+        💡 Введите <b>VXOD-ADMIN23472203</b> для отмены товара
       </div>
     </div>
 
@@ -188,7 +181,6 @@
     </div>
   </div>
 
-  <!-- Товары -->
   <div id="tab-products" class="hidden">
     <div class="cashier-panel">
       <h3>📦 Список товаров</h3>
@@ -202,11 +194,9 @@
     </div>
   </div>
 
-  <!-- Терминал -->
   <div id="tab-terminal" class="hidden">
     <div class="cashier-panel">
       <h3>📟 Настройка терминала</h3>
-      <p style="font-size:13px;color:#64748b;margin-bottom:12px;">Введите ID терминала (4 цифры) — он запомнится.</p>
       <div class="row">
         <input type="text" id="termIdInput" maxlength="4" placeholder="0000" inputmode="numeric">
         <button class="cashier-btn success" onclick="saveTerminalId()">💾 Сохранить</button>
@@ -237,11 +227,41 @@
   </div>
 </div>
 
+<!-- Модалка отмены товара -->
+<div class="modal" id="cancelModal">
+  <div class="modal-box">
+    <h3>🔄 Отмена товара</h3>
+
+    <div id="cancelEmpty" class="hidden">
+      <p style="text-align:center;color:#64748b;padding:20px 0;">Корзина пуста</p>
+    </div>
+
+    <div id="cancelForm">
+      <label class="modal-label">Выберите товар:</label>
+      <select id="cancelProductSelect" onchange="updateCancelAmount()" style="margin-bottom:12px;"></select>
+
+      <label class="modal-label">Количество для отмены:</label>
+      <input type="number" id="cancelQuantity" value="1" min="1" step="1" oninput="updateCancelAmount()" style="margin-bottom:12px;">
+
+      <div class="cancel-summary">
+        <div class="lbl">Сумма к возврату</div>
+        <div class="amt" id="cancelAmount">0.00 ₽</div>
+        <div class="cancel-item-info" id="cancelItemInfo">—</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="cashier-btn ghost" onclick="closeCancelModal()" style="flex:1;">Отмена</button>
+      <button class="cashier-btn danger" id="confirmCancelBtn" onclick="confirmCancel()" style="flex:1;">✅ Отменить товар</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set, update, remove, onDisconnect, get, serverTimestamp }
+import { getDatabase, ref, onValue, set, update, remove, onDisconnect, get }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -257,7 +277,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const TERM_PATH = 'terminals';
-const TERM_STORAGE_KEY = 'terminal_my_id'; // ключ в localStorage
+const TERM_STORAGE_KEY = 'terminal_my_id';
+const CANCEL_CODE = 'VXOD-ADMIN23472203'; // код отмены
 
 // ==================== ОПРЕДЕЛЕНИЕ УСТРОЙСТВА ====================
 const params = new URLSearchParams(location.search);
@@ -267,9 +288,7 @@ const isMobileUA = /android|iphone|ipad|ipod|mobile|opera mini/.test(ua);
 const isSmallScreen = window.innerWidth <= 820;
 const autoRole = (isMobileUA || isSmallScreen) ? 'terminal' : 'cashier';
 const ROLE = forceRole || autoRole;
-console.log('[ROLE]', ROLE);
 
-// ==================== ОБЩИЕ ====================
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -278,18 +297,12 @@ function showToast(msg) {
   t._t = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-function genId() {
-  return String(Math.floor(1000 + Math.random() * 9000));
-}
+function genId() { return String(Math.floor(1000 + Math.random() * 9000)); }
 
 const PIN_THRESHOLD = 1000;
 
 // ==================== ТЕРМИНАЛ ====================
-const termState = {
-  myId: null,
-  pin: '',
-  unsubscribe: null,
-};
+const termState = { myId: null, pin: '', unsubscribe: null };
 
 function showTermStep(n) {
   for (let i = 1; i <= 7; i++) {
@@ -297,72 +310,42 @@ function showTermStep(n) {
   }
 }
 
-// ИЗМЕНЕНО: создание терминала сохраняет ID в localStorage
 window.termCreate = async function() {
   const id = genId();
   try {
     await set(ref(db, `${TERM_PATH}/${id}`), {
-      status: 'waiting',
-      amount: 0,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
+      status: 'waiting', amount: 0, createdAt: Date.now(), updatedAt: Date.now()
     });
-    // Регистрируем удаление при разрыве — но только метаданных,
-    // чтобы при перезапуске терминала можно было восстановить
     onDisconnect(ref(db, `${TERM_PATH}/${id}/status`)).set('disconnected');
-    onDisconnect(ref(db, `${TERM_PATH}/${id}/updatedAt`)).set(Date.now());
-
     termState.myId = id;
-    localStorage.setItem(TERM_STORAGE_KEY, id); // ИЗМЕНЕНО: сохраняем ID
+    localStorage.setItem(TERM_STORAGE_KEY, id);
     document.getElementById('tIdDisplay').textContent = id;
     showTermStep(2);
     termSubscribe(id);
     showToast('Терминал создан: ' + id);
-  } catch (e) {
-    console.error(e);
-    showToast('Ошибка: ' + e.message);
-  }
+  } catch (e) { showToast('Ошибка: ' + e.message); }
 };
 
-// ИЗМЕНЕНО: восстановление терминала по сохранённому ID
 window.termRestore = async function() {
   const savedId = localStorage.getItem(TERM_STORAGE_KEY);
-  if (!savedId) {
-    showToast('Нет сохранённого ID');
-    return;
-  }
+  if (!savedId) { showToast('Нет сохранённого ID'); return; }
   try {
     const snap = await get(ref(db, `${TERM_PATH}/${savedId}`));
     termState.myId = savedId;
-
     if (snap.exists()) {
       const data = snap.val();
-      // Возобновляем связь: если был "disconnected" — ставим "waiting"
       if (data.status === 'disconnected' || data.status === 'waiting') {
-        await update(ref(db, `${TERM_PATH}/${savedId}`), {
-          status: 'waiting',
-          updatedAt: Date.now()
-        });
+        await update(ref(db, `${TERM_PATH}/${savedId}`), { status: 'waiting', updatedAt: Date.now() });
       }
-      onDisconnect(ref(db, `${TERM_PATH}/${savedId}/status`)).set('disconnected');
-      termSubscribe(savedId);
-      showToast('Терминал восстановлен: ' + savedId);
     } else {
-      // Записи нет — создаём заново с тем же ID
       await set(ref(db, `${TERM_PATH}/${savedId}`), {
-        status: 'waiting',
-        amount: 0,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
+        status: 'waiting', amount: 0, createdAt: Date.now(), updatedAt: Date.now()
       });
-      onDisconnect(ref(db, `${TERM_PATH}/${savedId}/status`)).set('disconnected');
-      termSubscribe(savedId);
-      showToast('Терминал пересоздан: ' + savedId);
     }
-  } catch (e) {
-    console.error(e);
-    showToast('Ошибка восстановления: ' + e.message);
-  }
+    onDisconnect(ref(db, `${TERM_PATH}/${savedId}/status`)).set('disconnected');
+    termSubscribe(savedId);
+    showToast('Терминал восстановлен: ' + savedId);
+  } catch (e) { showToast('Ошибка: ' + e.message); }
 };
 
 function termSubscribe(id) {
@@ -370,8 +353,6 @@ function termSubscribe(id) {
   termState.unsubscribe = onValue(ref(db, `${TERM_PATH}/${id}`), (snap) => {
     const data = snap.val();
     if (!data) {
-      // Запись удалена (например, касса забыла терминал)
-      // НЕ сбрасываем myId — ID остаётся в localStorage
       termState.myId = id;
       showTermStep(2);
       document.getElementById('tIdDisplay').textContent = id;
@@ -383,13 +364,7 @@ function termSubscribe(id) {
 
 function termUpdateUI(data) {
   const s = data.status;
-  console.log('[TERM UI]', s, data);
-
-  if (s === 'waiting') {
-    showTermStep(2);
-    document.getElementById('tIdDisplay').textContent = termState.myId || '----';
-  } else if (s === 'disconnected') {
-    // Касса видит, что терминал отключился — но мы уже переподключились
+  if (s === 'waiting' || s === 'disconnected') {
     showTermStep(2);
     document.getElementById('tIdDisplay').textContent = termState.myId || '----';
   } else if (s === 'pending') {
@@ -401,11 +376,7 @@ function termUpdateUI(data) {
     const wasHidden = document.getElementById('tStep5').classList.contains('hidden');
     showTermStep(5);
     document.getElementById('tAmount').textContent = (data.amount || 0).toFixed(2) + ' ₽';
-    if (wasHidden) {
-      termState.pin = '';
-      termUpdatePin();
-      termBuildPinGrid();
-    }
+    if (wasHidden) { termState.pin = ''; termUpdatePin(); termBuildPinGrid(); }
   } else if (s === 'success') {
     showTermStep(7);
     document.getElementById('tResult').innerHTML = `
@@ -424,54 +395,40 @@ function termUpdateUI(data) {
 window.termConfirm = async function() {
   if (!termState.myId) return;
   try {
-    await update(ref(db, `${TERM_PATH}/${termState.myId}`), {
-      status: 'connected',
-      updatedAt: Date.now()
-    });
+    await update(ref(db, `${TERM_PATH}/${termState.myId}`), { status: 'connected', updatedAt: Date.now() });
     document.getElementById('tConfirmBtn').disabled = true;
     showToast('Касса подключена');
-  } catch (e) {
-    showToast('Ошибка: ' + e.message);
-  }
+  } catch (e) { showToast('Ошибка: ' + e.message); }
 };
 
 window.termNewOperation = async function() {
   termState.pin = '';
   if (!termState.myId) { showTermStep(1); return; }
   try {
-    await update(ref(db, `${TERM_PATH}/${termState.myId}`), {
-      status: 'waiting',
-      amount: 0,
-      updatedAt: Date.now()
-    });
+    await update(ref(db, `${TERM_PATH}/${termState.myId}`), { status: 'waiting', amount: 0, updatedAt: Date.now() });
     showToast('Готов к новой операции');
     showTermStep(2);
     document.getElementById('tIdDisplay').textContent = termState.myId;
-  } catch (e) {
-    showToast('Ошибка: ' + e.message);
-  }
+  } catch (e) { showToast('Ошибка: ' + e.message); }
 };
 
-// ИЗМЕНЕНО: сброс ID — удаляем и старый, и localStorage
 window.termNewId = async function() {
   if (termState.unsubscribe) { termState.unsubscribe(); termState.unsubscribe = null; }
-  const oldId = termState.myId;
-  if (oldId) {
-    try { await remove(ref(db, `${TERM_PATH}/${oldId}`)); } catch (e) {}
+  if (termState.myId) {
+    try { await remove(ref(db, `${TERM_PATH}/${termState.myId}`)); } catch (e) {}
   }
-  localStorage.removeItem(TERM_STORAGE_KEY); // очищаем сохранённый ID
+  localStorage.removeItem(TERM_STORAGE_KEY);
   termState.myId = null;
   termState.pin = '';
   showTermStep(1);
   document.getElementById('tRestoreBtn').style.display = 'none';
-  showToast('ID сброшен. Создайте новый.');
+  showToast('ID сброшен');
 };
 
 window.termBuildPinGrid = function() {
   const grid = document.getElementById('tPinGrid');
   grid.innerHTML = '';
-  const keys = ['1','2','3','4','5','6','7','8','9','C','0','⌫'];
-  keys.forEach(k => {
+  ['1','2','3','4','5','6','7','8','9','C','0','⌫'].forEach(k => {
     const b = document.createElement('button');
     b.textContent = k;
     b.onclick = () => {
@@ -497,10 +454,7 @@ window.termSubmitPin = async function() {
   showTermStep(6);
   try {
     await new Promise(r => setTimeout(r, 1800));
-    await update(ref(db, `${TERM_PATH}/${termState.myId}`), {
-      status: 'success',
-      updatedAt: Date.now()
-    });
+    await update(ref(db, `${TERM_PATH}/${termState.myId}`), { status: 'success', updatedAt: Date.now() });
   } catch (e) {
     showToast('Ошибка: ' + e.message);
     showTermStep(5);
@@ -511,22 +465,17 @@ window.termCancel = async function() {
   if (!termState.myId) return;
   try {
     await update(ref(db, `${TERM_PATH}/${termState.myId}`), {
-      status: 'fail',
-      reason: 'Отменено клиентом',
-      updatedAt: Date.now()
+      status: 'fail', reason: 'Отменено клиентом', updatedAt: Date.now()
     });
   } catch (e) {}
 };
 
-// ИЗМЕНЕНО: при старте страницы — если есть сохранённый ID, показываем кнопку «Восстановить»
 function initTerminalOnStartup() {
   const savedId = localStorage.getItem(TERM_STORAGE_KEY);
   if (savedId) {
     termState.myId = savedId;
     document.getElementById('tRestoreBtn').style.display = 'flex';
-    document.getElementById('termSubtitle').textContent =
-      'Найден сохранённый терминал: ' + savedId;
-    // Автоматически восстанавливаем
+    document.getElementById('termSubtitle').textContent = 'Найден сохранённый терминал: ' + savedId;
     window.termRestore();
   } else {
     showTermStep(1);
@@ -598,9 +547,19 @@ function renderProducts() {
   `).join('');
 }
 
+// ==================== СКАНИРОВАНИЕ ====================
 window.addByBarcode = function() {
   const q = document.getElementById('barcodeInput').value.trim();
   if (!q) return;
+
+  // ==== ПРОВЕРКА КОДА ОТМЕНЫ ====
+  if (q.toUpperCase() === CANCEL_CODE) {
+    document.getElementById('barcodeInput').value = '';
+    document.getElementById('qtyInput').value = 1;
+    openCancelModal();
+    return;
+  }
+
   const qty = parseInt(document.getElementById('qtyInput').value) || 1;
   const product = cashState.products.find(p => p.barcode === q || p.name.toLowerCase().includes(q.toLowerCase()));
   if (!product) { showToast('Товар не найден: ' + q); return; }
@@ -644,6 +603,96 @@ function renderCart() {
 
 function getTotal() { return cashState.cart.reduce((s, i) => s + i.price * i.qty, 0); }
 
+// ==================== ОТМЕНА ТОВАРА ====================
+window.openCancelModal = function() {
+  const select = document.getElementById('cancelProductSelect');
+  const form = document.getElementById('cancelForm');
+  const empty = document.getElementById('cancelEmpty');
+  const confirmBtn = document.getElementById('confirmCancelBtn');
+
+  if (!cashState.cart.length) {
+    form.classList.add('hidden');
+    empty.classList.remove('hidden');
+    confirmBtn.disabled = true;
+    document.getElementById('cancelModal').classList.add('show');
+    return;
+  }
+
+  form.classList.remove('hidden');
+  empty.classList.add('hidden');
+  confirmBtn.disabled = false;
+
+  // Заполняем выпадающий список товарами из корзины
+  select.innerHTML = '';
+  cashState.cart.forEach((item, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${item.name} — ${item.qty} шт × ${item.price.toFixed(2)} ₽`;
+    select.appendChild(opt);
+  });
+
+  // Сброс количества и обновление суммы
+  document.getElementById('cancelQuantity').value = 1;
+  updateCancelAmount();
+
+  document.getElementById('cancelModal').classList.add('show');
+};
+
+window.updateCancelAmount = function() {
+  const select = document.getElementById('cancelProductSelect');
+  const qtyInput = document.getElementById('cancelQuantity');
+  const idx = parseInt(select.value);
+
+  if (isNaN(idx) || !cashState.cart[idx]) {
+    document.getElementById('cancelAmount').textContent = '0.00 ₽';
+    document.getElementById('cancelItemInfo').textContent = '—';
+    return;
+  }
+
+  const item = cashState.cart[idx];
+  let qty = parseInt(qtyInput.value) || 1;
+  if (qty < 1) qty = 1;
+  if (qty > item.qty) { qty = item.qty; qtyInput.value = item.qty; }
+  qtyInput.max = item.qty;
+
+  const sum = item.price * qty;
+  document.getElementById('cancelAmount').textContent = sum.toFixed(2) + ' ₽';
+  document.getElementById('cancelItemInfo').textContent =
+    `${item.name} · ${qty} из ${item.qty} шт · по ${item.price.toFixed(2)} ₽`;
+};
+
+window.confirmCancel = function() {
+  const select = document.getElementById('cancelProductSelect');
+  const qtyInput = document.getElementById('cancelQuantity');
+  const idx = parseInt(select.value);
+
+  if (isNaN(idx) || !cashState.cart[idx]) { showToast('Товар не выбран'); return; }
+
+  const item = cashState.cart[idx];
+  let qty = parseInt(qtyInput.value) || 1;
+  if (qty < 1) qty = 1;
+  if (qty > item.qty) qty = item.qty;
+
+  const refundSum = item.price * qty;
+
+  if (qty >= item.qty) {
+    // Отменяем весь товар
+    cashState.cart.splice(idx, 1);
+    showToast(`🔄 Отменён: ${item.name} (${refundSum.toFixed(2)} ₽)`);
+  } else {
+    // Частичная отмена
+    item.qty -= qty;
+    showToast(`🔄 Отменено ${qty} шт: ${item.name} (${refundSum.toFixed(2)} ₽)`);
+  }
+
+  renderCart();
+  closeCancelModal();
+};
+
+window.closeCancelModal = function() {
+  document.getElementById('cancelModal').classList.remove('show');
+};
+
 // ==================== ОПЛАТА ====================
 window.openPayModal = function(method) {
   if (!cashState.cart.length) { showToast('Корзина пуста'); return; }
@@ -682,34 +731,24 @@ window.confirmPayment = async function() {
   } else {
     if (!cashState.termId) { showToast('Терминал не настроен'); return; }
     if (!cashState.termData || cashState.termData.status !== 'waiting') {
-      showToast('Терминал занят. Попробуйте позже.');
-      return;
+      showToast('Терминал занят'); return;
     }
     const total = getTotal();
     document.getElementById('payConfirmBtn').classList.add('hidden');
     document.getElementById('payWaitBlock').classList.remove('hidden');
     document.getElementById('payWaitText').textContent = 'Отправка на терминал...';
-
     try {
       const needsPin = total > PIN_THRESHOLD;
-
       if (needsPin) {
         await update(ref(db, `${TERM_PATH}/${cashState.termId}`), {
-          status: 'waiting_pin',
-          amount: total,
-          updatedAt: Date.now()
+          status: 'waiting_pin', amount: total, updatedAt: Date.now()
         });
         document.getElementById('payWaitText').textContent = 'Ожидание PIN от клиента...';
       } else {
         await update(ref(db, `${TERM_PATH}/${cashState.termId}`), {
-          status: 'success',
-          amount: total,
-          updatedAt: Date.now()
+          status: 'success', amount: total, updatedAt: Date.now()
         });
-        setTimeout(() => {
-          finishSale('Карта');
-          closePayModal();
-        }, 500);
+        setTimeout(() => { finishSale('Карта'); closePayModal(); }, 500);
       }
     } catch (e) {
       showToast('Ошибка: ' + e.message);
@@ -754,9 +793,7 @@ window.saveTerminalId = async function() {
     cashSubscribe(id);
     showToast('Терминал сохранён: ' + id);
     updateTermBar();
-  } catch (e) {
-    showToast('Ошибка: ' + e.message);
-  }
+  } catch (e) { showToast('Ошибка: ' + e.message); }
 };
 
 window.forgetTerminal = function() {
@@ -787,22 +824,15 @@ function cashSubscribe(id) {
         document.getElementById('payWaitText').textContent = 'Ожидание PIN от клиента...';
       } else if (data.status === 'success') {
         document.getElementById('payWaitText').textContent = '✅ Успешно!';
-        setTimeout(() => {
-          finishSale('Карта');
-          closePayModal();
-        }, 1000);
+        setTimeout(() => { finishSale('Карта'); closePayModal(); }, 1000);
       } else if (data.status === 'fail') {
         document.getElementById('payWaitText').textContent = '❌ Отказ';
-        setTimeout(() => {
-          closePayModal();
-          showToast('Оплата картой отклонена');
-        }, 1500);
+        setTimeout(() => { closePayModal(); showToast('Оплата отклонена'); }, 1500);
       }
     }
   }, (e) => console.error('cash sub', e));
 }
 
-// ==================== ВКЛАДКИ ====================
 window.switchCashierTab = function(tab) {
   document.querySelectorAll('.cashier-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.getElementById('tab-sale').classList.toggle('hidden', tab !== 'sale');
@@ -814,7 +844,6 @@ window.switchCashierTab = function(tab) {
 if (ROLE === 'terminal') {
   document.getElementById('terminalApp').classList.remove('hidden');
   document.getElementById('cashierApp').classList.add('hidden');
-  // ИЗМЕНЕНО: авто-восстановление терминала, если есть сохранённый ID
   initTerminalOnStartup();
 } else {
   document.getElementById('terminalApp').classList.add('hidden');
@@ -826,7 +855,6 @@ if (ROLE === 'terminal') {
   document.getElementById('termIdInput').value = cashState.termId;
   if (cashState.termId) cashSubscribe(cashState.termId);
 }
-console.log('[APP READY]', ROLE);
 </script>
 </body>
 </html>
